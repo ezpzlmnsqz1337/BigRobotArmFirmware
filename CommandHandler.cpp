@@ -1,7 +1,7 @@
 #include "CommandHandler.h"
 #include "Arduino.h"
 
-CommandHandler::CommandHandler(const DrawbotBuilder& _drawbotBuilder) : drawbotBuilder(_drawbotBuilder), buffer("")
+CommandHandler::CommandHandler(const ArmBuilder& armbuilder) : armBuilder(armbuilder), buffer("")
 {
   this->sofar = 0;
 }
@@ -46,7 +46,7 @@ void CommandHandler::processCommand()
     if (gNumber == 28)
     {
       // G28 - home
-      this->drawbotBuilder.home();
+      // this->armBuilder.home();
       return;
     }
     // handle G command
@@ -72,7 +72,7 @@ void CommandHandler::processCommand()
     Serial.print(",");
     Serial.println(yPos);
 
-    this->drawbotBuilder.goTo(xPos, yPos, 300, extrude);
+    this->armBuilder.goTo(xPos, yPos, 300, extrude);
   }
 }
 
@@ -80,55 +80,4 @@ void CommandHandler::reset()
 {
   this->sofar = 0; // clear input buffer
   Serial.print("drawbot@test: ");
-}
-
-void CommandHandler::handleOld()
-{
-  if (Serial.available() > 0)
-  {
-    int userInput = Serial.read();
-    Serial.println("Command: " + userInput);
-
-    switch (userInput)
-    {
-    case 'h':
-      drawbotBuilder.home();
-      break;
-    case 's':
-      drawbotBuilder.moveX(-20);
-      break;
-    case 'a':
-      drawbotBuilder.moveY(-20);
-      break;
-    case 'x':
-      drawbotBuilder.moveX(20);
-      break;
-    case 'y':
-      drawbotBuilder.moveY(20);
-      break;
-    case 'r':
-      drawbotBuilder.reset();
-      break;
-    case 'u':
-      drawbotBuilder.penUp();
-      break;
-    case 'd':
-      drawbotBuilder.penDown();
-      break;
-    case 'f':
-      drawbotBuilder.goTo(1020, 640, 500, true);
-      break;
-    case 'g':
-      drawbotBuilder.goTo(1200, 340, 500, true);
-      break;
-    case 'b':
-      drawbotBuilder.goTo(1520, 720, 500, true);
-      break;
-    case 'v':
-      drawbotBuilder.goTo(1360, 980, 500, true);
-      break;
-    default:
-      Serial.println("Unknown user input");
-    }
-  }
 }
