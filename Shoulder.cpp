@@ -1,9 +1,8 @@
 #include "Shoulder.h"
 #include "Arduino.h"
 
-Shoulder::Shoulder()
+Shoulder::Shoulder() : AbstractArmPart::AbstractArmPart()
 {
-  AbstractArmPart::AbstractArmPart();
   mStepPin = 60;
   mDirPin = 61;
   mEnablePin = 56;

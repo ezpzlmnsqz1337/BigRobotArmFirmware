@@ -1,9 +1,8 @@
 #include "Base.h"
 #include "Arduino.h"
 
-Base::Base()
+Base::Base() : AbstractArmPart::AbstractArmPart()
 {
-  AbstractArmPart::AbstractArmPart();
   mStepPin = 54;
   mDirPin = 55;
   mEnablePin = 38;

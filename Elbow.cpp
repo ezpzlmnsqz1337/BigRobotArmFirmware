@@ -1,9 +1,8 @@
 #include "Elbow.h"
 #include "Arduino.h"
 
-Elbow::Elbow()
+Elbow::Elbow() : AbstractArmPart::AbstractArmPart()
 {
-  AbstractArmPart::AbstractArmPart();
   mStepPin = 46;
   mDirPin = 48;
   mEnablePin = 62;

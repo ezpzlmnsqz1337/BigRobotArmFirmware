@@ -14,7 +14,7 @@ void AbstractArmPart::init()
   mMotor.setAcceleration(1000 * stepsPerRevolution); // 2000mm/s^2
   mMotor.setEnablePin(mEnablePin);
   mMotor.setPinsInverted(false, false, true);
-  // mMotor.enableOutputs();
+  mMotor.enableOutputs();
 }
 
 AccelStepper& AbstractArmPart::getMotor()

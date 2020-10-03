@@ -1,9 +1,8 @@
 #include "Wrist.h"
 #include "Arduino.h"
 
-Wrist::Wrist()
+Wrist::Wrist() : AbstractArmPart::AbstractArmPart()
 {
-  AbstractArmPart::AbstractArmPart();
   mStepPin = 26;
   mDirPin = 28;
   mEnablePin = 24;
