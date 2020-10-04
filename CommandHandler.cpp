@@ -1,5 +1,4 @@
 #include "CommandHandler.h"
-#include "Arduino.h"
 
 CommandHandler::CommandHandler(const ArmBuilder& armbuilder) : armBuilder(armbuilder), buffer("")
 {

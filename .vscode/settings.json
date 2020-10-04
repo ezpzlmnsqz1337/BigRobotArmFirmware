@@ -4,5 +4,6 @@
     "files.associations": {
         "*.h": "cpp",
         "*.tcc": "cpp"
-    }
+    },
+    "c-cpp-flylint.flexelint.enable": false
 }

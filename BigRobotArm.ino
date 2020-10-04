@@ -1,10 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 
 #include "AccelStepper.h"
 
 #include "ArmBuilder.h"
+
+#define SP2_RX 11
+#define SP2_TX 12
+
+SoftwareSerial gamepad(SP2_RX, SP2_TX);
 
 #define E1_STEP_PIN 36
 #define E1_DIR_PIN 34
@@ -14,16 +20,20 @@
 #define JOY_LEFT_X 3
 #define JOY_LEFT_Y 4
 
-#define JOY_RIGHT_X 2
+#define JOY_RIGHT_X 14
 #define JOY_RIGHT_Y 6
 
-int leftX, leftY, rightX, rightY = 0;
+char cmd; // Reads the data from the serial port
+int leftX, leftY, rightX, rightY, sofar = 0;
+const int BUFFER_SIZE = 100;
+char buffer[BUFFER_SIZE];
 
 ArmBuilder armBuilder;
 
 void setup()
 {
   Serial.begin(9600);
+  gamepad.begin(57600);
   Serial.println("SETUP");
   armBuilder.init();
   pinMode(JOY_LEFT_X, INPUT);
@@ -38,13 +48,29 @@ void loop()
 {
   // Serial.println("LOOP");
 
-  Serial.println(analogRead(JOY_RIGHT_X));
-  Serial.println(analogRead(JOY_RIGHT_Y));
-  leftX = map(analogRead(JOY_LEFT_X), 0, 1023, -20, 20);
-  leftY = map(analogRead(JOY_LEFT_Y), 0, 1023, -20, 20);
+  sofar = 0;
+  if (gamepad.available() > 0)
+  {
+    do
+    {
+      cmd = gamepad.read();
+      if (sofar < BUFFER_SIZE)
+      {
+        buffer[sofar] = cmd;
+        sofar++;
+      }
+    } while (cmd != '\n');
+    Serial.print(buffer);
+  }
 
-  rightX = map(analogRead(JOY_RIGHT_X), 0, 1023, -20, 20);
-  rightY = map(analogRead(JOY_RIGHT_Y), 0, 1023, -20, 20);
+  // Serial.print(analogRead(JOY_RIGHT_X));
+  // Serial.print(", ");
+  // Serial.println(analogRead(JOY_RIGHT_Y));
+  // leftX = map(analogRead(JOY_LEFT_X), 0, 1023, -20, 20);
+  // leftY = map(analogRead(JOY_LEFT_Y), 0, 1023, -20, 20);
+
+  // rightX = map(analogRead(JOY_RIGHT_X), 0, 1023, -20, 20);
+  // rightY = map(analogRead(JOY_RIGHT_Y), 0, 1023, -20, 20);
 
   // Serial.print(", LEFT X: ");
   // Serial.println(leftX);
@@ -56,5 +82,7 @@ void loop()
   // Serial.println(rightY);
   // Serial.println();
   // Serial.println();
-  armBuilder.move(leftX, leftY, rightX, rightY);
+  // armBuilder.move(leftX, leftY, rightX, rightY);
+  // Serial.print("END loop");
+  delay(500);
 }

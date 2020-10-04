@@ -1,5 +1,4 @@
 #include "Shoulder.h"
-#include "Arduino.h"
 
 Shoulder::Shoulder() : AbstractArmPart::AbstractArmPart()
 {

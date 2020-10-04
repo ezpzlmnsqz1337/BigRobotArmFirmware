@@ -1,5 +1,4 @@
 #include "Elbow.h"
-#include "Arduino.h"
 
 Elbow::Elbow() : AbstractArmPart::AbstractArmPart()
 {

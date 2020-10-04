@@ -1,5 +1,4 @@
 #include "Wrist.h"
-#include "Arduino.h"
 
 Wrist::Wrist() : AbstractArmPart::AbstractArmPart()
 {

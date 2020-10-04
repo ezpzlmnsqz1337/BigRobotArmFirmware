@@ -1,5 +1,4 @@
 #include "AbstractArmPart.h"
-#include "Arduino.h"
 
 const uint16_t stepsPerRevolution = 200 * 16; // change this to fit the number of steps per revolution
 

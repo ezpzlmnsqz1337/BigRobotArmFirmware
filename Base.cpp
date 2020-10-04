@@ -1,5 +1,4 @@
 #include "Base.h"
-#include "Arduino.h"
 
 Base::Base() : AbstractArmPart::AbstractArmPart()
 {
