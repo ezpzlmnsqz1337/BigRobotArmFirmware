@@ -14,8 +14,8 @@
 #define E1_ENABLE_PIN 30
 #define E1_CS_PIN 44
 
-#define JOY_LEFT_X_PIN 3
-#define JOY_LEFT_Y_PIN 4
+#define JOY_LEFT_X_PIN 4
+#define JOY_LEFT_Y_PIN 3
 
 #define JOY_RIGHT_X_PIN 14
 #define JOY_RIGHT_Y_PIN 13

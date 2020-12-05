@@ -6,4 +6,8 @@ Elbow::Elbow() : AbstractArmPart::AbstractArmPart()
   mDirPin = 48;
   mEnablePin = 62;
   mCsPin = 40;
+
+  // elbow needs faster speed
+  mMaxSpeed = mMaxSpeed * 2;
+  mAcceleration = mAcceleration * 2;
 }

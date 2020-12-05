@@ -9,9 +9,19 @@ ArmBuilder::ArmBuilder()
 void ArmBuilder::init()
 {
   mBase.init();
+
   mShoulder.init();
+  mShoulder.setMaxSpeed(mShoulder.getMaxSpeed()/2);
+  mShoulder.setAcceleration(mShoulder.getAcceleration()/2);
+
   mElbow.init();
+  mElbow.setMaxSpeed(mElbow.getMaxSpeed()*2);
+  mElbow.setAcceleration(mElbow.getAcceleration()*2);
+
   mWrist1.init();
+  mWrist1.setMaxSpeed(mWrist1.getMaxSpeed()/2);
+  mWrist1.setAcceleration(mWrist1.getAcceleration()/2);
+
   mWrist2.init();
   mGripper.init();
   mSteppers.addStepper(mBase.getMotor());
