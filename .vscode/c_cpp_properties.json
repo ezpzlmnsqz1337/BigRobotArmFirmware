@@ -1,26 +1,30 @@
 {
-  "configurations": [
-    {
-      "name": "Win32",
-      "includePath": [
-        "C:/Program Files (x86)/Arduino/tools/**",
-        "C:/Program Files (x86)/Arduino/hardware/tools/**",
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/**",
-        "C:/Program Files (x86)/Arduino/libraries/**",
-        "${workspaceFolder}/**",
-        "C:/Users/mazel/OneDrive/Documents/Arduino/**",
-        "c:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
-        "c:\\Program Files (x86)\\Arduino\\tools\\**"
-      ],
-      "defines": ["_DEBUG", "UNICODE", "_UNICODE", "USBCON"],
-      "intelliSenseMode": "gcc-x64",
-      "cppStandard": "c++11",
-      "cStandard": "c11",
-      "forcedInclude": [
-        "C:/Program Files (x86)/Arduino/hardware/arduino/avr/cores/arduino/Arduino.h",
-        "c:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
-      ]
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "E:\\Programy\\Arduino\\libraries\\**",
+                "${workspaceFolder}/**",
+                "E:\\Programy\\Arduino\\hardware\\arduino\\avr\\**",
+                "E:\\Programy\\Arduino\\tools\\**",
+                "C:\\Users\\mazli\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.22\\**",
+                "C:\\Users\\mazli\\OneDrive\\Documents\\Arduino\\libraries\\**",
+                "C:\\Users\\mazli\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "USBCON"
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "cppStandard": "c++11",
+            "cStandard": "c11",
+            "forcedInclude": [
+                "E:\\Programy\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h",
+                "C:\\Users\\mazli\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.22\\cores\\arduino\\Arduino.h"
+            ]
+        }
+    ],
+    "version": 4
 }

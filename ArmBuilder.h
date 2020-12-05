@@ -5,6 +5,7 @@
 #include "Shoulder.h"
 #include "Elbow.h"
 #include "Wrist.h"
+#include "Gripper.h"
 
 #include "MultiStepper.h"
 
@@ -14,7 +15,9 @@ private:
   Base mBase;
   Shoulder mShoulder;
   Elbow mElbow;
-  Wrist mWrist;
+  Wrist mWrist1;
+  Wrist mWrist2;
+  Gripper mGripper;
 
   MultiStepper mSteppers;
 
@@ -23,13 +26,14 @@ public:
 
   void init();
 
-  void move(const int base, const int shoulder, const int elbow, const int wrist);
-  void goTo(const int base, const int shoulder, const int elbow, const int wrist);
+  void move(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
+  void goTo(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
 
   const Base& getBase();
   const Shoulder& getShoulder();
   const Elbow& getElbow();
-  const Wrist& getWrist();
+  const Wrist& getWrist1();
+  const Wrist& getWrist2();
 };
 
 // This is the end of the header guard

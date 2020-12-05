@@ -71,7 +71,7 @@ void CommandHandler::processCommand()
     Serial.print(",");
     Serial.println(yPos);
 
-    this->armBuilder.goTo(xPos, yPos, 300, extrude);
+    this->armBuilder.goTo(xPos, yPos, 300, extrude, 50);
   }
 }
 
