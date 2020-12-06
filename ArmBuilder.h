@@ -2,10 +2,10 @@
 #define ARM_BUILDER_H
 
 #include "Base.h"
-#include "Shoulder.h"
 #include "Elbow.h"
-#include "Wrist.h"
 #include "Gripper.h"
+#include "Shoulder.h"
+#include "Wrist.h"
 
 #include "MultiStepper.h"
 
@@ -20,6 +20,9 @@ private:
   Gripper mGripper;
 
   MultiStepper mSteppers;
+
+protected:
+  int getNormalizedValue(const int value);
 
 public:
   ArmBuilder();

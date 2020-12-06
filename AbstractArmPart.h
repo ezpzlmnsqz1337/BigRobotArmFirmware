@@ -11,7 +11,7 @@ protected:
   uint8_t mDirPin = 0;
   uint8_t mEnablePin = 0;
   uint8_t mCsPin = 0;
-  
+
   uint16_t mStepsPerRevolution = 200 * 16; // change this to fit the number of steps per revolution
   uint32_t mMaxSpeed = mStepsPerRevolution;
   uint32_t mAcceleration = mStepsPerRevolution;

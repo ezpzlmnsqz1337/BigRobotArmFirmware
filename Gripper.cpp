@@ -1,22 +1,24 @@
 #include "Gripper.h"
 
-const int minPos = 0;
-const int maxPos = 180;
+const int minPos = 40;
+const int maxPos = 150;
 
-Gripper::Gripper(): mServo(3, minPos, maxPos, 90)
+Gripper::Gripper() : mServo(3, minPos, maxPos, 90)
 {
-  
 }
 
-void Gripper::init() {
-  
+void Gripper::init()
+{
+  mServo.init();
 }
 
-void Gripper::open() {
+void Gripper::open()
+{
   mServo.moveTo(minPos);
 }
 
-void Gripper::close() {
+void Gripper::close()
+{
   mServo.moveTo(maxPos);
 }
 

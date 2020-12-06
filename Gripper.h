@@ -6,7 +6,8 @@
 class Gripper
 {
 protected:
-  MyServo mServo;  
+  MyServo mServo;
+
 public:
   Gripper();
   void init();

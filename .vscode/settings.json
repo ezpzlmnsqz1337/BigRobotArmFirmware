@@ -1,9 +1,11 @@
 {
     "editor.formatOnSave": true,
-    "C_Cpp.clang_format_path": "C:/Program Files/LLVM/bin/clang-format",
     "files.associations": {
         "*.h": "cpp",
         "*.tcc": "cpp"
     },
+    "c-cpp-flylint.clang.enable": false,
+    "c-cpp-flylint.cppcheck.configFile": ".clang_format",
+    "c-cpp-flylint.cppcheck.platform": "avr8",
     "c-cpp-flylint.flexelint.enable": false
 }

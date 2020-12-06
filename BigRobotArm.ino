@@ -1,6 +1,6 @@
+#include <Arduino.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <Arduino.h>
 
 #include "AccelStepper.h"
 
@@ -35,14 +35,15 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println("SETUP");
-  armBuilder.init();
-  pinMode(SERVO_PIN, INPUT);
+  pinMode(SERVO_PIN, OUTPUT);
 
   pinMode(JOY_LEFT_X_PIN, INPUT);
   pinMode(JOY_LEFT_Y_PIN, INPUT);
 
   pinMode(JOY_RIGHT_X_PIN, INPUT);
   pinMode(JOY_RIGHT_Y_PIN, INPUT);
+
+  armBuilder.init();
   Serial.println("SETUP END");
 }
 
@@ -67,15 +68,14 @@ void loop()
   // low pass filter for bad input values
   leftValueX = 0.9 * leftValueX + 0.1 * analogRead(JOY_LEFT_X_PIN);
   leftValueY = 0.9 * leftValueY + 0.1 * analogRead(JOY_LEFT_Y_PIN);
-  leftX = map(leftValueX, 100, 923, -50, 50);
-  leftY = map(leftValueY, 100, 923, -50, 50);
-
+  leftX = map(leftValueX, 100, 923, -400, 400);
+  leftY = map(leftValueY, 100, 923, -400, 400);
 
   // low pass filter for bad input values
   rightValueX = 0.9 * rightValueX + 0.1 * analogRead(JOY_RIGHT_X_PIN);
   rightValueY = 0.9 * rightValueY + 0.1 * analogRead(JOY_RIGHT_Y_PIN);
-  rightX = map(rightValueX, 100, 923, -50, 50);
-  rightY = map(rightValueY, 100, 923, -50, 50);
+  rightX = map(rightValueX, 100, 923, -400, 400);
+  rightY = map(rightValueY, 100, 923, -400, 400);
 
   // fake last analog control input
   centerX = 0;
