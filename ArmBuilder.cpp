@@ -82,3 +82,33 @@ int ArmBuilder::getNormalizedValue(const int value)
   const int deadZone = 30;
   return abs(value) > deadZone ? (value / 100) : 0;
 }
+
+Base& ArmBuilder::getBase()
+{
+  return mBase;
+}
+
+Shoulder& ArmBuilder::getShoulder()
+{
+  return mShoulder;
+}
+
+Elbow& ArmBuilder::getElbow()
+{
+  return mElbow;
+}
+
+Wrist& ArmBuilder::getWrist1()
+{
+  return mWrist1;
+}
+
+Wrist& ArmBuilder::getWrist2()
+{
+  return mWrist2;
+}
+
+Gripper& ArmBuilder::getGripper()
+{
+  return mGripper;
+}

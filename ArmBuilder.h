@@ -32,11 +32,12 @@ public:
   void move(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
   void goTo(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
 
-  const Base& getBase();
-  const Shoulder& getShoulder();
-  const Elbow& getElbow();
-  const Wrist& getWrist1();
-  const Wrist& getWrist2();
+  Base& getBase();
+  Shoulder& getShoulder();
+  Elbow& getElbow();
+  Wrist& getWrist1();
+  Wrist& getWrist2();
+  Gripper& getGripper();
 };
 
 // This is the end of the header guard
