@@ -9,6 +9,11 @@
 
 #include "MultiStepper.h"
 
+const int MAX_POSITIONS = 50;
+
+long savedPositions[MAX_POSITIONS][6];
+int numOfSavedPositions = 0;
+
 class ArmBuilder
 {
 private:
@@ -31,6 +36,8 @@ public:
 
   void move(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
   void goTo(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
+
+  void save();
 
   Base& getBase();
   Shoulder& getShoulder();

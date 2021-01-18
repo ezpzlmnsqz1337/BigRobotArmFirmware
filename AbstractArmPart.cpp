@@ -4,8 +4,12 @@ AbstractArmPart::AbstractArmPart()
 {
 }
 
-void AbstractArmPart::init()
+void AbstractArmPart::init(const int nStepPin, const int nDirPin, const int nEnablePin)
 {
+  mStepPin = nStepPin;
+  mDirPin = nDirPin;
+  mEnablePin = nEnablePin;
+
   mMotor = AccelStepper(AccelStepper::DRIVER, mStepPin, mDirPin);
   mMotor.setMaxSpeed(mMaxSpeed);         // 100mm/s @ 80 steps/mm
   mMotor.setAcceleration(mAcceleration); // 2000mm/s^2

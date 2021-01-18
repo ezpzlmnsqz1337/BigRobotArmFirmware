@@ -7,10 +7,9 @@ class AbstractArmPart
 {
 protected:
   AccelStepper mMotor;
-  uint8_t mStepPin = 0;
-  uint8_t mDirPin = 0;
-  uint8_t mEnablePin = 0;
-  uint8_t mCsPin = 0;
+  uint8_t mStepPin;
+  uint8_t mDirPin;
+  uint8_t mEnablePin;
 
   uint16_t mStepsPerRevolution = 200 * 16; // change this to fit the number of steps per revolution
   uint32_t mMaxSpeed = mStepsPerRevolution;
@@ -18,7 +17,7 @@ protected:
 
 public:
   AbstractArmPart();
-  void init();
+  void init(const int nStepPin, const int nDirPin, const int nEnablePin);
   void setMaxSpeed(const int maxSpeed);
   int getMaxSpeed();
   void setAcceleration(const int acceleration);
