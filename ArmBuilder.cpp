@@ -24,7 +24,7 @@ void ArmBuilder::init()
   mWristRotate.setMaxSpeed(mWristRotate.getMaxSpeed());
   mWristRotate.setAcceleration(mWristRotate.getAcceleration());
 
-  mWrist.init(34, 36, 30);
+  mWrist.init(36, 34, 30);
   mWrist.setMaxSpeed(mWrist.getMaxSpeed());
   mWrist.setAcceleration(mWrist.getAcceleration());
 
