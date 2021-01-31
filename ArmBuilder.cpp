@@ -13,18 +13,18 @@ void ArmBuilder::init()
   mBase.setAcceleration(mShoulder.getAcceleration() * 5);
 
   mShoulder.init(60, 61, 56);
-  mShoulder.setMaxSpeed(mShoulder.getMaxSpeed());         // no microstepping
-  mShoulder.setAcceleration(mShoulder.getAcceleration()); // no microstepping
+  mShoulder.setMaxSpeed(mShoulder.getMaxSpeed() / 8);         // no microstepping
+  mShoulder.setAcceleration(mShoulder.getAcceleration() / 8); // no microstepping
 
   mElbow.init(46, 48, 62);
-  mElbow.setMaxSpeed(mElbow.getMaxSpeed() * 3);
-  mElbow.setAcceleration(mElbow.getAcceleration() * 3);
+  mElbow.setMaxSpeed(mElbow.getMaxSpeed() * 5);
+  mElbow.setAcceleration(mElbow.getAcceleration() * 5);
 
   mWristRotate.init(26, 28, 24);
   mWristRotate.setMaxSpeed(mWristRotate.getMaxSpeed());
   mWristRotate.setAcceleration(mWristRotate.getAcceleration());
 
-  mWrist.init(30, 36, 34);
+  mWrist.init(34, 36, 30);
   mWrist.setMaxSpeed(mWrist.getMaxSpeed());
   mWrist.setAcceleration(mWrist.getAcceleration());
 
