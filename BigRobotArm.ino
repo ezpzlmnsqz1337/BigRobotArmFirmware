@@ -10,8 +10,6 @@
 ArmBuilder armBuilder;
 Controls controls;
 
-int currentPosition = 0;
-
 void setup()
 {
   Serial.begin(9600);
@@ -29,27 +27,11 @@ void loop()
 
   if (controls.isPlaying())
   {
-    // case: repeating positions
-    if (currentPosition == numOfSavedPositions + 1)
-    {
-      currentPosition = 0;
-    }
-    armBuilder.goTo(savedPositions[currentPosition][0], savedPositions[currentPosition][1],
-                    savedPositions[currentPosition][2], savedPositions[currentPosition][3],
-                    savedPositions[currentPosition][4]);
-    currentPosition++;
+    armBuilder.repeatPositions();
   }
   else
   {
-    // case: controlled by joystics
-
-    if (controls.isSwitched())
-    {
-      armBuilder.move(leftX, leftY, rightX, 0, rightY);
-    }
-    else
-    {
-      armBuilder.move(leftX, leftY, rightX, rightY, 0);
-    }
+    armBuilder.loop(controls.getLeftX(), controls.getLeftY(), controls.getRightX(), controls.getRightY(),
+                    controls.isSwitched());
   }
 }

@@ -11,8 +11,8 @@ void ArmBuilder::init()
   mBase.init(54, 55, 38); // hardcoded dir pins
 
   mShoulder.init(60, 61, 56);
-  mShoulder.setMaxSpeed(mShoulder.getMaxSpeed() / 10);
-  mShoulder.setAcceleration(mShoulder.getAcceleration() / 10);
+  mShoulder.setMaxSpeed(mShoulder.getMaxSpeed());
+  mShoulder.setAcceleration(mShoulder.getAcceleration());
 
   mElbow.init(46, 48, 62);
   mElbow.setMaxSpeed(mElbow.getMaxSpeed() * 2);
@@ -33,6 +33,30 @@ void ArmBuilder::init()
   mSteppers.addStepper(mElbow.getMotor());
   mSteppers.addStepper(mWrist1.getMotor());
   mSteppers.addStepper(mWrist2.getMotor());
+}
+
+void ArmBuilder::repeatPositions()
+{
+  // case: repeating positions
+  if (currentPosition == numOfSavedPositions + 1)
+  {
+    currentPosition = 0;
+  }
+  goTo(savedPositions[currentPosition][0], savedPositions[currentPosition][1], savedPositions[currentPosition][2],
+       savedPositions[currentPosition][3], savedPositions[currentPosition][4]);
+  currentPosition++;
+}
+
+void ArmBuilder::loop(const int leftX, const int leftY, const int rightX, const int rightY, const bool isSwitched)
+{
+  if (isSwitched)
+  {
+    move(leftX, leftY, rightX, 0, rightY);
+  }
+  else
+  {
+    move(leftX, leftY, rightX, rightY, 0);
+  }
 }
 
 void ArmBuilder::goTo(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2)
@@ -60,8 +84,8 @@ void ArmBuilder::move(const int base, const int shoulder, const int elbow, const
   int dWrist1 = getNormalizedValue(wrist1);
   int dWrist2 = getNormalizedValue(wrist2);
 
-  // Serial.print(", LEFT X: ");
-  // Serial.println(dBase);
+  Serial.print(", LEFT X: ");
+  Serial.println(dBase);
   // Serial.print(", LEFT Y: ");
   // Serial.println(dShoulder);
   // Serial.print(", RIGHT X: ");

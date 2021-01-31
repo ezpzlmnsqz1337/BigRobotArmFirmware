@@ -1,5 +1,10 @@
 #include "Controls.h"
 
+ezButton analog1SW(JOY_LEFT_BTN_PIN);
+ezButton analog2SW(JOY_RIGHT_BTN_PIN);
+ezButton analog3SW(BTN1_PIN);
+ezButton analog4SW(BTN2_PIN);
+
 Controls::Controls()
 {
 }
@@ -31,16 +36,16 @@ void Controls::loop()
 void Controls::handleJoysticks()
 {
   // low pass filter for bad input values
-  leftValueX = 0.9 * leftValueX + 0.1 * analogRead(JOY_LEFT_X_PIN);
-  leftValueY = 0.9 * leftValueY + 0.1 * analogRead(JOY_LEFT_Y_PIN);
-  leftX = map(leftValueX, 100, 923, -400, 400);
-  leftY = map(leftValueY, 100, 923, -400, 400);
+  mLeftValueX = 0.9 * mLeftValueX + 0.1 * analogRead(JOY_LEFT_X_PIN);
+  mLeftValueY = 0.9 * mLeftValueY + 0.1 * analogRead(JOY_LEFT_Y_PIN);
+  mLeftX = map(mLeftValueX, 100, 923, -400, 400);
+  mLeftY = map(mLeftValueY, 100, 923, -400, 400);
 
   // low pass filter for bad input values
-  rightValueX = 0.9 * rightValueX + 0.1 * analogRead(JOY_RIGHT_X_PIN);
-  rightValueY = 0.9 * rightValueY + 0.1 * analogRead(JOY_RIGHT_Y_PIN);
-  rightX = map(rightValueX, 100, 923, -400, 400);
-  rightY = map(rightValueY, 100, 923, -400, 400);
+  mRightValueX = 0.9 * mRightValueX + 0.1 * analogRead(JOY_RIGHT_X_PIN);
+  mRightValueY = 0.9 * mRightValueY + 0.1 * analogRead(JOY_RIGHT_Y_PIN);
+  mRightX = map(mRightValueX, 100, 923, -400, 400);
+  mRightY = map(mRightValueY, 100, 923, -400, 400);
 }
 
 void Controls::handleButtons()
@@ -74,7 +79,7 @@ void Controls::handleButtons()
       else if (analog1SWflag == 1)
       {
         Serial.println("Switch2");
-        mSwitched = false;
+        mSwitched = true;
         analog1SWflag = 0;
       }
     }
@@ -164,4 +169,29 @@ bool Controls::isPlaying()
 bool Controls::isSwitched()
 {
   return mSwitched;
+}
+
+int Controls::getLeftX()
+{
+  return mLeftX;
+}
+
+int Controls::getLeftY()
+{
+  return mLeftY;
+}
+
+int Controls::getRightX()
+{
+  return mRightX;
+}
+
+int Controls::getRightY()
+{
+  return mRightY;
+}
+
+Inputs Controls::getInputs()
+{
+  return {mLeftX, mLeftY, mRightX, mRightY};
 }
