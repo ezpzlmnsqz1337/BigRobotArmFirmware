@@ -3,6 +3,7 @@
 #define COMMAND_HANDLER_H
 
 #include "ArmBuilder.h"
+#include "Structures.h"
 
 // This is the content of the .h file, which is where the declarations go
 
@@ -23,6 +24,8 @@ public:
   void handle();
 
   void processCommand();
+
+  void printResponse(const JointPositions& jp);
 
   void reset();
 };

@@ -18,7 +18,6 @@ void CommandHandler::handle()
   if (Serial.available() > 0)
   {
     char c = Serial.read();
-    Serial.print(c);
     if (c == 13)
     {
       // if enter, command is complete
@@ -48,11 +47,13 @@ void CommandHandler::processCommand()
   if (command[0] == 'G')
   {
     int gNumber = atoi(&command[1]);
-    int gripper = false;
+    int gripper = 40;
     if (gNumber == 28)
     {
       // G28 - home
-      mArmBuilder.goTo({0, 0, 0, 0, 0, 40});
+      JointPositions jp{0, 0, 0, 0, 0, 40};
+      printResponse(jp);
+      mArmBuilder.goTo(jp);
       return;
     }
     // handle G command
@@ -75,32 +76,38 @@ void CommandHandler::processCommand()
     char* wrist = strtok(NULL, " ");
 
     JointPositions jp;
-    jp.base = atol(&base[1]);
-    jp.shoulder = atol(&shoulder[1]);
-    jp.elbow = atol(&elbow[1]);
-    jp.wristRotate = atol(&wristRotate[1]);
-    jp.wrist = atol(&wrist[1]);
+    jp.base = base != NULL ? atol(&base[1]) : 0;
+    jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : 0;
+    jp.elbow = elbow != NULL ? atol(&elbow[1]) : 0;
+    jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[1]) : 0;
+    jp.wrist = wrist != NULL ? atol(&wrist[1]) : 0;
     jp.gripper = gripper;
 
-    Serial.print("Moving to - base:");
-    Serial.print(jp.base);
-    Serial.print(", shoulder: ");
-    Serial.print(jp.shoulder);
-    Serial.print(", elbow: ");
-    Serial.print(jp.elbow);
-    Serial.print(", wristRotate: ");
-    Serial.print(jp.wristRotate);
-    Serial.print(", wrist: ");
-    Serial.print(jp.wrist);
-    Serial.print(", gripper: ");
-    Serial.println(jp.gripper);
+    printResponse(jp);
 
-    return mArmBuilder.goTo(jp);
+    mArmBuilder.goTo(jp);
   }
+}
+
+void CommandHandler::printResponse(const JointPositions& jp)
+{
+  Serial.println("BigRobotArm::MOVING-TO");
+  Serial.print("base: ");
+  Serial.print(jp.base);
+  Serial.print(", shoulder: ");
+  Serial.print(jp.shoulder);
+  Serial.print(", elbow: ");
+  Serial.print(jp.elbow);
+  Serial.print(", wristRotate: ");
+  Serial.print(jp.wristRotate);
+  Serial.print(", wrist: ");
+  Serial.print(jp.wrist);
+  Serial.print(", gripper: ");
+  Serial.println(jp.gripper);
 }
 
 void CommandHandler::reset()
 {
   sofar = 0; // clear input buffer
-  Serial.print("bigRobotArm@test: ");
+  Serial.println("BigRobotArm::READY");
 }
