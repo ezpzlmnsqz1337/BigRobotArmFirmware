@@ -7,7 +7,7 @@
 
 // This is the content of the .h file, which is where the declarations go
 
-const int BUFFER_SIZE = 30;
+const int BUFFER_SIZE = 50;
 
 class CommandHandler
 {
