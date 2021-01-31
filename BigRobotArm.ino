@@ -5,33 +5,38 @@
 #include "AccelStepper.h"
 
 #include "ArmBuilder.h"
+#include "CommandHandler.h"
 #include "Controls.h"
 
 ArmBuilder armBuilder;
+CommandHandler commandHandler;
 Controls controls;
 
 void setup()
 {
-  Serial.begin(9600);
-  Serial.println("SETUP");
-
   controls.init(armBuilder, 100);
   armBuilder.init();
-
-  Serial.println("SETUP END");
+  commandHandler.init(armBuilder);
 }
 
 void loop()
 {
-  controls.loop();
+  commandHandler.handle();
+  // controls.loop();
 
-  if (controls.isPlaying())
-  {
-    armBuilder.repeatPositions();
-  }
-  else
-  {
-    armBuilder.loop(controls.getLeftX(), controls.getLeftY(), controls.getRightX(), controls.getRightY(),
-                    controls.isSwitched());
-  }
+  // if (controls.isPlaying())
+  // {
+  //   armBuilder.repeatPositions();
+  // }
+  // else
+  // {
+  //   // armBuilder.goTo(pos1);
+  //   // delay(300);
+  //   // armBuilder.goTo(pos4);
+  //   // delay(300);
+  //   // armBuilder.goTo(pos3);
+  //   // delay(300);
+  //   // armBuilder.loop(controls.getLeftX(), controls.getLeftY(), controls.getRightX(), controls.getRightY(),
+  //   //                controls.isSwitched());
+  // }
 }

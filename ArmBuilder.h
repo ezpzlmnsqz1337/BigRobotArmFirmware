@@ -7,6 +7,8 @@
 #include "Shoulder.h"
 #include "Wrist.h"
 
+#include "Structures.h"
+
 #include "MultiStepper.h"
 
 class ArmBuilder
@@ -15,38 +17,41 @@ private:
   Base mBase;
   Shoulder mShoulder;
   Elbow mElbow;
-  Wrist mWrist1;
-  Wrist mWrist2;
+  Wrist mWristRotate;
+  Wrist mWrist;
   Gripper mGripper;
 
-  MultiStepper mSteppers;
-
 protected:
-  int getNormalizedValue(const int value);
+  long getNormalizedValue(const long value);
 
   static const int MAX_POSITIONS = 50;
 
-  long savedPositions[MAX_POSITIONS][6];
+  JointPositions savedPositions[MAX_POSITIONS];
   int numOfSavedPositions = 0;
-  int currentPosition = 0;
+  int currentPositionId = 0;
 
 public:
   ArmBuilder();
 
   void init();
-  void loop(const int leftX, const int leftY, const int rightX, const int rightY, const bool isSwitched);
+  void loop(const long leftX, const long leftY, const long rightX, const long rightY, const bool isSwitched);
   void repeatPositions();
 
-  void move(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
-  void goTo(const int base, const int shoulder, const int elbow, const int wrist1, const int wrist2);
+  void move(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist);
+  void goTo(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist);
+
+  void goTo(const JointPositions& jp);
+  void move(const JointPositions& jp);
+
+  bool reachedPositions(const JointPositions& jp);
 
   void save();
 
   Base& getBase();
   Shoulder& getShoulder();
   Elbow& getElbow();
-  Wrist& getWrist1();
-  Wrist& getWrist2();
+  Wrist& getWristRotate();
+  Wrist& getWrist();
   Gripper& getGripper();
 };
 

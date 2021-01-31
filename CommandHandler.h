@@ -11,14 +11,14 @@ const int BUFFER_SIZE = 30;
 class CommandHandler
 {
 private:
-  ArmBuilder armBuilder;
   char buffer[BUFFER_SIZE];
   int sofar;
+  ArmBuilder mArmBuilder;
 
 public:
-  explicit CommandHandler(const ArmBuilder& armBuilder);
+  CommandHandler();
 
-  void init();
+  void init(const ArmBuilder& mArmBuilder);
 
   void handle();
 

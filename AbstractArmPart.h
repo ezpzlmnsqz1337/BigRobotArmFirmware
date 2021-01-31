@@ -11,16 +11,16 @@ protected:
   uint8_t mDirPin;
   uint8_t mEnablePin;
 
-  uint16_t mStepsPerRevolution = 200 * 16; // change this to fit the number of steps per revolution
-  uint32_t mMaxSpeed = mStepsPerRevolution;
-  uint32_t mAcceleration = mStepsPerRevolution;
+  long mStepsPerRevolution = 200 * 16; // change this to fit the number of steps per revolution
+  float mMaxSpeed = mStepsPerRevolution;
+  float mAcceleration = mStepsPerRevolution;
 
 public:
   AbstractArmPart();
   void init(const int nStepPin, const int nDirPin, const int nEnablePin);
-  void setMaxSpeed(const int maxSpeed);
+  void setMaxSpeed(const float maxSpeed);
   int getMaxSpeed();
-  void setAcceleration(const int acceleration);
+  void setAcceleration(const float acceleration);
   int getAcceleration();
 
   AccelStepper& getMotor();

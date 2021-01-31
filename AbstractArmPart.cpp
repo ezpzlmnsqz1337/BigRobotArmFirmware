@@ -23,13 +23,13 @@ AccelStepper& AbstractArmPart::getMotor()
   return mMotor;
 }
 
-void AbstractArmPart::setMaxSpeed(const int maxSpeed)
+void AbstractArmPart::setMaxSpeed(const float maxSpeed)
 {
   mMaxSpeed = maxSpeed;
   mMotor.setMaxSpeed(maxSpeed);
 }
 
-void AbstractArmPart::setAcceleration(const int acceleration)
+void AbstractArmPart::setAcceleration(const float acceleration)
 {
   mMaxSpeed = acceleration;
   mMotor.setAcceleration(acceleration);

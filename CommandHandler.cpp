@@ -1,19 +1,20 @@
 #include "CommandHandler.h"
+#include "Arduino.h"
 
-CommandHandler::CommandHandler(const ArmBuilder& armbuilder) : armBuilder(armbuilder), buffer("")
+CommandHandler::CommandHandler() : buffer("")
 {
-  this->sofar = 0;
+  sofar = 0;
 }
 
-void CommandHandler::init()
+void CommandHandler::init(const ArmBuilder& armBuilder)
 {
   Serial.begin(9600);
-  this->reset();
+  mArmBuilder = armBuilder;
+  reset();
 }
 
 void CommandHandler::handle()
 {
-
   if (Serial.available() > 0)
   {
     char c = Serial.read();
@@ -21,62 +22,85 @@ void CommandHandler::handle()
     if (c == 13)
     {
       // if enter, command is complete
-      this->buffer[sofar] = 0;
-      this->processCommand();
-      this->reset();
+      buffer[sofar] = 0;
+      processCommand();
+      reset();
       return;
     }
     if (sofar < BUFFER_SIZE)
     {
       // if space in buffer, add char to buffer
-      this->buffer[sofar++] = c;
+      buffer[sofar++] = c;
     }
   }
 }
 
 void CommandHandler::processCommand()
 {
-  char* command = strtok(this->buffer, " ");
+  char* command = strtok(buffer, " ");
+
+  // X - BASE
+  // Y - SHOULDER
+  // Z - ELBOW
+  // E0 - WRIST ROTATE
+  // E1 - WRIST
 
   if (command[0] == 'G')
   {
     int gNumber = atoi(&command[1]);
-    bool extrude = false;
+    int gripper = false;
     if (gNumber == 28)
     {
       // G28 - home
-      // this->armBuilder.home();
+      mArmBuilder.goTo({0, 0, 0, 0, 0, 40});
       return;
     }
     // handle G command
     if (gNumber == 0)
     {
       // handle G0 command
-      extrude = false;
+      gripper = 40;
     }
     if (gNumber == 1)
     {
       // handle G1 command
-      extrude = true;
+      gripper = 150;
     }
 
     // handle positions
-    char* x = strtok(NULL, " ");
-    char* y = strtok(NULL, " ");
+    char* base = strtok(NULL, " ");
+    char* shoulder = strtok(NULL, " ");
+    char* elbow = strtok(NULL, " ");
+    char* wristRotate = strtok(NULL, " ");
+    char* wrist = strtok(NULL, " ");
 
-    int xPos = atoi(&x[1]);
-    int yPos = atoi(&y[1]);
+    JointPositions jp;
+    jp.base = atol(&base[1]);
+    jp.shoulder = atol(&shoulder[1]);
+    jp.elbow = atol(&elbow[1]);
+    jp.wristRotate = atol(&wristRotate[1]);
+    jp.wrist = atol(&wrist[1]);
+    jp.gripper = gripper;
 
-    Serial.println(xPos);
-    Serial.print(",");
-    Serial.println(yPos);
+    Serial.print("Moving to - base:");
+    Serial.print(jp.base);
+    Serial.print(", shoulder: ");
+    Serial.print(jp.shoulder);
+    Serial.print(", elbow: ");
+    Serial.print(jp.elbow);
+    Serial.print(", wristRotate: ");
+    Serial.print(jp.wristRotate);
+    Serial.print(", wrist: ");
+    Serial.print(jp.wrist);
+    Serial.print(", gripper: ");
+    Serial.println(jp.gripper);
 
-    this->armBuilder.goTo(xPos, yPos, 300, extrude, 50);
+    return mArmBuilder.goTo(jp);
   }
 }
 
 void CommandHandler::reset()
 {
-  this->sofar = 0; // clear input buffer
-  Serial.print("drawbot@test: ");
+  sofar = 0; // clear input buffer
+  Serial.print("bigRobotArm@test: ");
 }

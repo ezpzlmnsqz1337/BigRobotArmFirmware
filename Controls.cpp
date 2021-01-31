@@ -30,7 +30,7 @@ void Controls::init(ArmBuilder& armBuilder, const uint16_t nDebounceTime)
 void Controls::loop()
 {
   handleJoysticks();
-  handleButtons();
+  // handleButtons();
 }
 
 void Controls::handleJoysticks()
