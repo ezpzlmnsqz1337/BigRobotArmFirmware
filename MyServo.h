@@ -13,6 +13,7 @@ private:
   int maximum;
   int pos;
   int servoPin;
+  int targetPosition;
   Servo servo;
 
 public:
@@ -22,9 +23,13 @@ public:
 
   int getPosition();
 
+  void setTargetPosition(const int target);
+
   void moveBy(int value);
 
   void moveTo(int value);
+
+  void loop();
 
   void sweep();
 };

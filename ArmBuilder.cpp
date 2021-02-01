@@ -59,7 +59,8 @@ void ArmBuilder::loop(const long leftX, const long leftY, const long rightX, con
   mWrist.getMotor().run();
 }
 
-void ArmBuilder::goTo(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist)
+void ArmBuilder::goTo(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist,
+                      const int gripper)
 {
   JointPositions jp; // {base, shoulder, elbow, wristRotate, wrist};
   jp.base = base;
@@ -67,6 +68,7 @@ void ArmBuilder::goTo(const long base, const long shoulder, const long elbow, co
   jp.elbow = elbow;
   jp.wristRotate = wristRotate;
   jp.wrist = wrist;
+  jp.gripper = gripper;
 
   while (!reachedPositions(jp))
   {
@@ -75,6 +77,7 @@ void ArmBuilder::goTo(const long base, const long shoulder, const long elbow, co
     mElbow.getMotor().run();
     mWristRotate.getMotor().run();
     mWrist.getMotor().run();
+    mGripper.getServo().loop();
   }
 }
 
@@ -108,20 +111,12 @@ void ArmBuilder::move(const long base, const long shoulder, const long elbow, co
 
 void ArmBuilder::goTo(const JointPositions& jp)
 {
-  if (jp.gripper > 100)
-  {
-    mGripper.open();
-  }
-  else
-  {
-    mGripper.close();
-  }
-
   mBase.getMotor().moveTo(jp.base);
   mShoulder.getMotor().moveTo(jp.shoulder);
   mElbow.getMotor().moveTo(jp.elbow);
   mWristRotate.getMotor().moveTo(jp.wristRotate);
   mWrist.getMotor().moveTo(jp.wrist);
+  mGripper.getServo().setTargetPosition(jp.gripper);
 
   while (!reachedPositions(jp))
   {
@@ -130,6 +125,7 @@ void ArmBuilder::goTo(const JointPositions& jp)
     mElbow.getMotor().run();
     mWristRotate.getMotor().run();
     mWrist.getMotor().run();
+    mGripper.getServo().loop();
   }
 }
 
@@ -166,13 +162,20 @@ bool ArmBuilder::reachedPositions(const JointPositions& jp)
   return (jp.base == mBase.getMotor().currentPosition() && jp.shoulder == mShoulder.getMotor().currentPosition() &&
           jp.elbow == mElbow.getMotor().currentPosition() &&
           jp.wristRotate == mWristRotate.getMotor().currentPosition() &&
-          jp.wrist == mWrist.getMotor().currentPosition());
+          jp.wrist == mWrist.getMotor().currentPosition() && jp.gripper == mGripper.getServo().getPosition());
 }
 
 long ArmBuilder::getNormalizedValue(const long value)
 {
   const long deadZone = 30;
   return abs(value) > deadZone ? value : 0;
+}
+
+JointPositions ArmBuilder::getPositions()
+{
+  return {mBase.getMotor().currentPosition(),  mShoulder.getMotor().currentPosition(),
+          mElbow.getMotor().currentPosition(), mWristRotate.getMotor().currentPosition(),
+          mWrist.getMotor().currentPosition(), mGripper.getServo().getPosition()};
 }
 
 Base& ArmBuilder::getBase()

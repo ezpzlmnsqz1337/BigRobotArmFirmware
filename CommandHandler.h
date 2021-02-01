@@ -25,7 +25,7 @@ public:
 
   void processCommand();
 
-  void printResponse(const JointPositions& jp);
+  void printResponse(const JointPositions& jp, bool valid);
 
   void reset();
 };

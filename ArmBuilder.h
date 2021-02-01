@@ -38,12 +38,14 @@ public:
   void repeatPositions();
 
   void move(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist);
-  void goTo(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist);
+  void goTo(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist,
+            const int gripper);
 
   void goTo(const JointPositions& jp);
   void move(const JointPositions& jp);
 
   bool reachedPositions(const JointPositions& jp);
+  JointPositions getPositions();
 
   void save();
 

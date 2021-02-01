@@ -10,6 +10,7 @@ void CommandHandler::init(const ArmBuilder& armBuilder)
 {
   Serial.begin(9600);
   mArmBuilder = armBuilder;
+  Serial.println("BigRobotArm::READY");
   reset();
 }
 
@@ -38,76 +39,73 @@ void CommandHandler::processCommand()
 {
   char* command = strtok(buffer, " ");
 
-  // X - BASE
-  // Y - SHOULDER
-  // Z - ELBOW
-  // E0 - WRIST ROTATE
-  // E1 - WRIST
-
   if (command[0] == 'G')
   {
     int gNumber = atoi(&command[1]);
-    int gripper = 40;
     if (gNumber == 28)
     {
       // G28 - home
       JointPositions jp{0, 0, 0, 0, 0, 40};
-      printResponse(jp);
+      printResponse(jp, true);
       mArmBuilder.goTo(jp);
       return;
     }
-    // handle G command
-    if (gNumber == 0)
+
+    if (gNumber == 0 || gNumber == 1)
     {
-      // handle G0 command
-      gripper = 40;
+      // handle positions
+      char* base = strtok(NULL, " ");
+      char* shoulder = strtok(NULL, " ");
+      char* elbow = strtok(NULL, " ");
+      char* wristRotate = strtok(NULL, " ");
+      char* wrist = strtok(NULL, " ");
+      char* gripper = strtok(NULL, " ");
+
+      JointPositions jp;
+      jp.base = base != NULL ? atol(&base[1]) : 0;
+      jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : 0;
+      jp.elbow = elbow != NULL ? atol(&elbow[1]) : 0;
+      jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[1]) : 0;
+      jp.wrist = wrist != NULL ? atol(&wrist[1]) : 0;
+      jp.gripper = gripper != NULL ? atol(&gripper[1]) : 0;
+
+      printResponse(jp, true);
+
+      mArmBuilder.goTo(jp);
+      return;
     }
-    if (gNumber == 1)
-    {
-      // handle G1 command
-      gripper = 150;
-    }
 
-    // handle positions
-    char* base = strtok(NULL, " ");
-    char* shoulder = strtok(NULL, " ");
-    char* elbow = strtok(NULL, " ");
-    char* wristRotate = strtok(NULL, " ");
-    char* wrist = strtok(NULL, " ");
-
-    JointPositions jp;
-    jp.base = base != NULL ? atol(&base[1]) : 0;
-    jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : 0;
-    jp.elbow = elbow != NULL ? atol(&elbow[1]) : 0;
-    jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[1]) : 0;
-    jp.wrist = wrist != NULL ? atol(&wrist[1]) : 0;
-    jp.gripper = gripper;
-
-    printResponse(jp);
-
-    mArmBuilder.goTo(jp);
+    // if unknown command
+    printResponse(mArmBuilder.getPositions(), false);
   }
 }
 
-void CommandHandler::printResponse(const JointPositions& jp)
+void CommandHandler::printResponse(const JointPositions& jp, bool valid)
 {
-  Serial.println("BigRobotArm::MOVING-TO");
-  Serial.print("base: ");
+  if (valid)
+  {
+    Serial.println("BigRobotArm::MOVING-TO");
+  }
+  else
+  {
+    Serial.println("BigRobotArm::INVALID-COMMAND");
+  }
+  Serial.print("B: ");
   Serial.print(jp.base);
-  Serial.print(", shoulder: ");
+  Serial.print(" S: ");
   Serial.print(jp.shoulder);
-  Serial.print(", elbow: ");
+  Serial.print(" E: ");
   Serial.print(jp.elbow);
-  Serial.print(", wristRotate: ");
+  Serial.print(" WR: ");
   Serial.print(jp.wristRotate);
-  Serial.print(", wrist: ");
+  Serial.print(" W: ");
   Serial.print(jp.wrist);
-  Serial.print(", gripper: ");
+  Serial.print(" G: ");
   Serial.println(jp.gripper);
+  Serial.println("BigRobotArm::READY");
 }
 
 void CommandHandler::reset()
 {
   sofar = 0; // clear input buffer
-  Serial.println("BigRobotArm::READY");
 }

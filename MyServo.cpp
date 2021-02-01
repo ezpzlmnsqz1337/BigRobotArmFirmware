@@ -8,54 +8,80 @@ MyServo::MyServo(int _servoPin, int _minimum, int _maximum, int _pos)
 
 void MyServo::init()
 {
-  servo.attach(this->servoPin);
-  servo.write(this->pos);
+  servo.attach(servoPin);
+  servo.write(pos);
 }
 
 int MyServo::getPosition()
 {
-  return this->pos;
+  return pos;
+}
+
+void MyServo::setTargetPosition(const int target)
+{
+  targetPosition = target;
 }
 
 void MyServo::moveBy(int value)
 {
-  int newValue = constrain(this->pos + value, this->minimum, this->maximum);
+  int newValue = constrain(pos + value, minimum, maximum);
   servo.write(newValue);
-  this->pos = newValue;
+  pos = newValue;
 }
 
 void MyServo::moveTo(int value)
 {
   // if already there, return
-  if (this->pos == value)
+  if (pos == value)
   {
     return;
   }
 
   // get value in between the servo limits
-  int newValue = constrain(value, this->minimum, this->maximum);
+  int newValue = constrain(value, minimum, maximum);
 
   // increment with delay to slow down the servo movement
-  int increment = newValue > this->pos ? +1 : -1;
-  while (this->pos != newValue)
+  int increment = newValue > pos ? +1 : -1;
+  while (pos != newValue)
   {
-    this->moveBy(increment);
+    moveBy(increment);
     delay(15);
   }
-  this->pos = newValue;
+  pos = newValue;
+}
+
+void MyServo::loop()
+{
+  // if already there, return
+  if (pos == targetPosition)
+  {
+    return;
+  }
+
+  if (pos > targetPosition)
+  {
+    pos--;
+    servo.write(pos);
+  }
+
+  if (pos < targetPosition)
+  {
+    pos++;
+    servo.write(pos);
+  }
 }
 
 void MyServo::sweep()
 {
-  for (this->pos = this->minimum; this->pos <= this->maximum; this->pos += 1)
+  for (pos = minimum; pos <= maximum; pos += 1)
   { // goes from 0 degrees to 180 degrees
     // in steps of 1 degree
-    servo.write(this->pos); // tell servo to go to position in variable 'pos'
-    delay(15);              // waits 15ms for the servo to reach the position
+    servo.write(pos); // tell servo to go to position in variable 'pos'
+    delay(15);        // waits 15ms for the servo to reach the position
   }
-  for (this->pos = this->maximum; this->pos >= this->minimum; this->pos -= 1)
-  {                         // goes from 180 degrees to 0 degrees
-    servo.write(this->pos); // tell servo to go to pos in variable 'pos'
-    delay(15);              // waits 15ms for the servo to reach the pos
+  for (pos = maximum; pos >= minimum; pos -= 1)
+  {                   // goes from 180 degrees to 0 degrees
+    servo.write(pos); // tell servo to go to pos in variable 'pos'
+    delay(15);        // waits 15ms for the servo to reach the pos
   }
 }
