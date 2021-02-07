@@ -1,7 +1,0 @@
-{
-    "board": "arduino:avr:mega",
-    "configuration": "cpu=atmega2560",
-    "port": "COM4",
-    "programmer": "AVR ISP",
-    "sketch": "BigRobotArm.ino"
-}
