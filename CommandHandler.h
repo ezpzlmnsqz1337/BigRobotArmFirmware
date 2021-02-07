@@ -25,6 +25,7 @@ public:
 
   void processCommand();
 
+  void printResponse(const float speed, const float acceleration, const bool valid);
   void printResponse(const JointPositions& jp, bool valid);
 
   void reset();

@@ -6,6 +6,7 @@
     },
     "c-cpp-flylint.clang.enable": false,
     "c-cpp-flylint.cppcheck.configFile": ".clang_format",
-    "c-cpp-flylint.cppcheck.platform": "avr8",
-    "c-cpp-flylint.flexelint.enable": false
+    "c-cpp-flylint.cppcheck.platform": "unix32",
+    "c-cpp-flylint.flexelint.enable": false,
+    "c-cpp-flylint.cppcheck.executable": "cppcheck"
 }

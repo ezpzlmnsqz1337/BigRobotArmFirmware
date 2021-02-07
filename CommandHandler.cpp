@@ -10,7 +10,6 @@ void CommandHandler::init(const ArmBuilder& armBuilder)
 {
   Serial.begin(9600);
   mArmBuilder = armBuilder;
-  Serial.println("BigRobotArm::READY");
   reset();
 }
 
@@ -50,6 +49,14 @@ void CommandHandler::processCommand()
       mArmBuilder.goTo(jp);
       return;
     }
+    if (gNumber == 92)
+    {
+      // G92 - set zero position
+      JointPositions jp{0, 0, 0, 0, 0, 40};
+      printResponse(jp, true);
+      mArmBuilder.setZeroPositoin();
+      return;
+    }
 
     if (gNumber == 0 || gNumber == 1)
     {
@@ -65,7 +72,7 @@ void CommandHandler::processCommand()
       jp.base = base != NULL ? atol(&base[1]) : 0;
       jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : 0;
       jp.elbow = elbow != NULL ? atol(&elbow[1]) : 0;
-      jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[1]) : 0;
+      jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[2]) : 0;
       jp.wrist = wrist != NULL ? atol(&wrist[1]) : 0;
       jp.gripper = gripper != NULL ? atol(&gripper[1]) : 0;
 
@@ -75,9 +82,69 @@ void CommandHandler::processCommand()
       return;
     }
 
-    // if unknown command
+    // if unknown G command
     printResponse(mArmBuilder.getPositions(), false);
   }
+  else if (command[0] == 'S')
+  {
+    // if speed command
+
+    int speed = atof(&command[1]);
+    if (speed != NULL)
+    {
+      mArmBuilder.setSpeed(speed);
+      printResponse(speed, -1, true);
+    }
+    else
+    {
+      printResponse(-1, -1, false);
+    }
+    return;
+  }
+  else if (command[0] == 'A')
+  {
+    // if acceleration command
+
+    int acceleration = atof(&command[1]);
+    if (acceleration != NULL)
+    {
+      mArmBuilder.setAcceleration(acceleration);
+      printResponse(-1, acceleration, true);
+    }
+    else
+    {
+      printResponse(-1, -1, false);
+    }
+    return;
+  }
+
+  // if unknown command
+  printResponse(mArmBuilder.getPositions(), false);
+}
+
+void CommandHandler::printResponse(const float speed, const float acceleration, const bool valid)
+{
+  if (valid)
+  {
+    if (speed >= 0)
+    {
+      Serial.println("BigRobotArm::SPEED-SET");
+      Serial.print("SPEED: ");
+      Serial.println(speed);
+    }
+    if (acceleration >= 0)
+    {
+      Serial.println("BigRobotArm::ACCELERATION-SET");
+      Serial.print("ACCELERATION: ");
+      Serial.println(acceleration);
+    }
+  }
+  else
+  {
+    Serial.println("BigRobotArm::INVALID-SPEED-ACCEL");
+  }
+
+  Serial.println("BigRobotArm::READY");
 }
 
 void CommandHandler::printResponse(const JointPositions& jp, bool valid)
@@ -90,17 +157,17 @@ void CommandHandler::printResponse(const JointPositions& jp, bool valid)
   {
     Serial.println("BigRobotArm::INVALID-COMMAND");
   }
-  Serial.print("B: ");
+  Serial.print("B");
   Serial.print(jp.base);
-  Serial.print(" S: ");
+  Serial.print(" S");
   Serial.print(jp.shoulder);
-  Serial.print(" E: ");
+  Serial.print(" E");
   Serial.print(jp.elbow);
-  Serial.print(" WR: ");
+  Serial.print(" WR");
   Serial.print(jp.wristRotate);
-  Serial.print(" W: ");
+  Serial.print(" W");
   Serial.print(jp.wrist);
-  Serial.print(" G: ");
+  Serial.print(" G");
   Serial.println(jp.gripper);
   Serial.println("BigRobotArm::READY");
 }

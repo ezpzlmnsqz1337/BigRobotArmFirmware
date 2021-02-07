@@ -22,21 +22,4 @@ void setup()
 void loop()
 {
   commandHandler.handle();
-  // controls.loop();
-
-  // if (controls.isPlaying())
-  // {
-  //   armBuilder.repeatPositions();
-  // }
-  // else
-  // {
-  //   // armBuilder.goTo(pos1);
-  //   // delay(300);
-  //   // armBuilder.goTo(pos4);
-  //   // delay(300);
-  //   // armBuilder.goTo(pos3);
-  //   // delay(300);
-  //   // armBuilder.loop(controls.getLeftX(), controls.getLeftY(), controls.getRightX(), controls.getRightY(),
-  //   //                controls.isSwitched());
-  // }
 }

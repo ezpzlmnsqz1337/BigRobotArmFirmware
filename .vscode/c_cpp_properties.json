@@ -1,16 +1,15 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "raspberryPi4",
             "includePath": [
-                "E:\\Programy\\Arduino\\libraries\\**",
                 "${workspaceFolder}/**",
-                "E:\\Programy\\Arduino\\hardware\\arduino\\avr\\**",
-                "E:\\Programy\\Arduino\\tools\\**",
-                "C:\\Users\\mazli\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.22\\**",
-                "C:\\Users\\mazli\\OneDrive\\Documents\\Arduino\\libraries\\**",
-                "C:\\Users\\mazli\\OneDrive\\Documents\\Arduino\\libraries\\ezButton\\**",
-                "C:\\Users\\mazli\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**"
+                "/home/pi/Arduino/**",
+                "/opt/arduino-1.8.13/**",
+                "/home/pi/.arduino15/packages/arduino/hardware/avr/1.8.3/**",
+                "/usr/bin/libraries/**",
+                "/home/pi/Arduino/libraries/**",
+                "/home/pi/.arduino15/packages/arduino/tools/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -18,12 +17,11 @@
                 "_UNICODE",
                 "USBCON"
             ],
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "gcc-x86",
             "cppStandard": "c++11",
             "cStandard": "c11",
             "forcedInclude": [
-                "E:\\Programy\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h",
-                "C:\\Users\\mazli\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.22\\cores\\arduino\\Arduino.h"
+                "/home/pi/.arduino15/packages/arduino/hardware/avr/1.8.3/cores/arduino/Arduino.h"
             ]
         }
     ],

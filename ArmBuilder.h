@@ -30,6 +30,14 @@ protected:
   int numOfSavedPositions = 0;
   int currentPositionId = 0;
 
+  float mDefaultSpeed = 200 * 16;        // stepps per mm
+  float mDefaultAcceleration = 200 * 16; // stepps per mm
+
+  float mSpeedMultiplier = 1;
+  float mAccelerationMultiplier = 1;
+
+  AccelStepper mMotors[5];
+
 public:
   ArmBuilder();
 
@@ -43,6 +51,11 @@ public:
 
   void goTo(const JointPositions& jp);
   void move(const JointPositions& jp);
+
+  void setSpeed(const float speed);
+  void setAcceleration(const float acceleration);
+  void setZeroPositoin();
+  AccelStepper* getMotors();
 
   bool reachedPositions(const JointPositions& jp);
   JointPositions getPositions();

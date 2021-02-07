@@ -2,7 +2,6 @@
 #define CONTROLS_H
 
 #include <Arduino.h>
-#include <ezButton.h>
 
 #include "ArmBuilder.h"
 #include "Structures.h"
@@ -51,19 +50,6 @@ private:
   int mRightValueY = 520;
 
   bool mPlaying = false;
-  bool mSwitched = false;
-
-  int analog1SWflag = 0;
-  int analog1SWlastValue = 1;
-
-  int analog2SWflag = 0;
-  int analog2SWlastValue = 1;
-
-  int analog3SWflag = 0;
-  int analog3SWlastValue = 1;
-
-  int analog4SWflag = 0;
-  int analog4SWlastValue = 1;
 
   void handleJoysticks();
   void handleButtons();
