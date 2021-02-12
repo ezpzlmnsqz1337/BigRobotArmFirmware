@@ -81,9 +81,6 @@ void CommandHandler::processCommand()
       mArmBuilder.goTo(jp);
       return;
     }
-
-    // if unknown G command
-    printResponse(mArmBuilder.getPositions(), false);
   }
   else if (command[0] == 'S')
   {
@@ -157,6 +154,7 @@ void CommandHandler::printResponse(const JointPositions& jp, bool valid)
   {
     Serial.println("BigRobotArm::INVALID-COMMAND");
   }
+  Serial.print("BigRobotArm::POSITION ");
   Serial.print("B");
   Serial.print(jp.base);
   Serial.print(" S");

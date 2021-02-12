@@ -29,13 +29,7 @@ void ArmBuilder::init()
   mWrist.setMaxSpeed(mDefaultSpeed);
   mWrist.setAcceleration(mDefaultAcceleration);
 
-  mMotors[0] = mBase.getMotor();
-  mMotors[1] = mShoulder.getMotor();
-  mMotors[2] = mElbow.getMotor();
-  mMotors[3] = mWristRotate.getMotor();
-  mMotors[4] = mWrist.getMotor();
-
-  // mGripper.init();
+  mGripper.init();
 }
 
 void ArmBuilder::setSpeed(const float speed)
@@ -66,87 +60,11 @@ void ArmBuilder::setAcceleration(const float acceleration)
 
 void ArmBuilder::setZeroPositoin()
 {
-  for (auto&& m : mMotors)
-  {
-    m.setCurrentPosition(0);
-  }
-}
-
-void ArmBuilder::repeatPositions()
-{
-  // case: repeating positions
-  if (currentPositionId == numOfSavedPositions + 1)
-  {
-    currentPositionId = 0;
-  }
-  goTo(savedPositions[currentPositionId]);
-  currentPositionId++;
-}
-
-void ArmBuilder::loop(const long leftX, const long leftY, const long rightX, const long rightY, const bool isSwitched)
-{
-  if (isSwitched)
-  {
-    move(leftX, leftY, rightX, 0, rightY);
-  }
-  else
-  {
-    move(leftX, leftY, rightX, rightY, 0);
-  }
-
-  for (auto&& m : mMotors)
-  {
-    m.run();
-  }
-}
-
-void ArmBuilder::goTo(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist,
-                      const int gripper)
-{
-  JointPositions jp; // {base, shoulder, elbow, wristRotate, wrist};
-  jp.base = base;
-  jp.shoulder = shoulder;
-  jp.elbow = elbow;
-  jp.wristRotate = wristRotate;
-  jp.wrist = wrist;
-  jp.gripper = gripper;
-
-  while (!reachedPositions(jp))
-  {
-    for (auto&& m : mMotors)
-    {
-      m.run();
-    }
-    mGripper.getServo().loop();
-  }
-}
-
-void ArmBuilder::move(const long base, const long shoulder, const long elbow, const long wristRotate, const long wrist)
-{
-  long dBase = getNormalizedValue(base);
-  long dShoulder = getNormalizedValue(shoulder);
-  long dElbow = getNormalizedValue(elbow);
-  long dWristRotate = getNormalizedValue(wristRotate);
-  long dWrist = getNormalizedValue(wrist);
-
-  // Serial.print(", LEFT X: ");
-  // Serial.println(dBase);
-  // Serial.print(", LEFT Y: ");
-  // Serial.println(dShoulder);
-  // Serial.print(", RIGHT X: ");
-  // Serial.println(dElbow);
-  // Serial.print(", RIGHT Y: ");
-  // Serial.println(dWristRotate);
-  // Serial.print(", Wrist 2: ");
-  // Serial.println(dWrist);
-  // Serial.println();
-  // Serial.println();
-
-  mBase.getMotor().move(dBase);
-  mShoulder.getMotor().move(dShoulder);
-  mElbow.getMotor().move(dElbow);
-  mWristRotate.getMotor().move(dWristRotate);
-  mWrist.getMotor().move(dWrist);
+  mBase.getMotor().setCurrentPosition(0);
+  mShoulder.getMotor().setCurrentPosition(0);
+  mElbow.getMotor().setCurrentPosition(0);
+  mWristRotate.getMotor().setCurrentPosition(0);
+  mWrist.getMotor().setCurrentPosition(0);
 }
 
 void ArmBuilder::goTo(const JointPositions& jp)
@@ -160,10 +78,11 @@ void ArmBuilder::goTo(const JointPositions& jp)
 
   while (!reachedPositions(jp))
   {
-    for (auto&& m : mMotors)
-    {
-      m.run();
-    }
+    mBase.getMotor().run();
+    mShoulder.getMotor().run();
+    mElbow.getMotor().run();
+    mWristRotate.getMotor().run();
+    mWrist.getMotor().run();
     mGripper.getServo().loop();
   }
 }
@@ -175,19 +94,6 @@ void ArmBuilder::move(const JointPositions& jp)
   long dElbow = getNormalizedValue(jp.elbow);
   long dWristRotate = getNormalizedValue(jp.wristRotate);
   long dWrist = getNormalizedValue(jp.wrist);
-
-  // Serial.print(", LEFT X: ");
-  // Serial.println(dBase);
-  // Serial.print(", LEFT Y: ");
-  // Serial.println(dShoulder);
-  // Serial.print(", RIGHT X: ");
-  // Serial.println(dElbow);
-  // Serial.print(", RIGHT Y: ");
-  // Serial.println(dWristRotate);
-  // Serial.print(", Wrist 2: ");
-  // Serial.println(dWrist);
-  // Serial.println();
-  // Serial.println();
 
   mBase.getMotor().move(dBase);
   mShoulder.getMotor().move(dShoulder);
@@ -245,23 +151,4 @@ Wrist& ArmBuilder::getWrist()
 Gripper& ArmBuilder::getGripper()
 {
   return mGripper;
-}
-
-void ArmBuilder::save()
-{
-  Serial.print("Save: ");
-  Serial.println(numOfSavedPositions);
-
-  if (numOfSavedPositions > MAX_POSITIONS - 1)
-  {
-    numOfSavedPositions = 0;
-  }
-  savedPositions[numOfSavedPositions].base = mBase.getMotor().currentPosition();
-  savedPositions[numOfSavedPositions].shoulder = mShoulder.getMotor().currentPosition();
-  savedPositions[numOfSavedPositions].elbow = mElbow.getMotor().currentPosition();
-  savedPositions[numOfSavedPositions].wristRotate = mWristRotate.getMotor().currentPosition();
-  savedPositions[numOfSavedPositions].wrist = mWrist.getMotor().currentPosition();
-  savedPositions[numOfSavedPositions].gripper = mGripper.getServo().getPosition();
-
-  numOfSavedPositions++;
 }
