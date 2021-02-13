@@ -54,7 +54,7 @@ void CommandHandler::processCommand()
       // G92 - set zero position
       JointPositions jp{0, 0, 0, 0, 0, 40};
       printResponse(jp, true);
-      mArmBuilder.setZeroPositoin();
+      mArmBuilder.setZeroPosition();
       return;
     }
 

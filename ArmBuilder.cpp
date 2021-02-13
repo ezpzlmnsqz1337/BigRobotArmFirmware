@@ -8,26 +8,18 @@ ArmBuilder::ArmBuilder()
 
 void ArmBuilder::init()
 {
-  mBase.init(54, 55, 38); // hardcoded dir pins
-  mBase.setMaxSpeed(mDefaultSpeed * 5);
-  mBase.setAcceleration(mDefaultAcceleration * 5);
+  mBase.init(M1_STEP, M2_DIR, M1_ENABLE, Config::M1_STEPS_PER_REVOLUTION, MICRO_16);
+  mBase.setMaxSpeedMultiplier(5);
+  mBase.setAccelerationMultiplier(5);
 
-  mShoulder.init(60, 61, 56);
-  mShoulder.setMaxSpeed(mDefaultSpeed / 8);
-  mShoulder.setAcceleration(mDefaultAcceleration / 8);
+  mShoulder.init(M2_STEP, M2_DIR, M2_ENABLE, Config::M2_STEPS_PER_REVOLUTION, MICRO_8);
   mShoulder.getMotor().setPinsInverted(true);
 
-  mElbow.init(46, 48, 62);
-  mElbow.setMaxSpeed(mDefaultSpeed);
-  mElbow.setAcceleration(mDefaultAcceleration);
+  mElbow.init(M3_STEP, M3_DIR, M3_ENABLE, Config::M3_STEPS_PER_REVOLUTION, MICRO_8);
 
-  mWristRotate.init(26, 28, 24);
-  mWristRotate.setMaxSpeed(mDefaultSpeed);
-  mWristRotate.setAcceleration(mDefaultAcceleration);
+  mWristRotate.init(M4_STEP, M4_DIR, M4_ENABLE, Config::M4_STEPS_PER_REVOLUTION, MICRO_16);
 
-  mWrist.init(36, 34, 30);
-  mWrist.setMaxSpeed(mDefaultSpeed);
-  mWrist.setAcceleration(mDefaultAcceleration);
+  mWrist.init(M5_STEP, M5_DIR, M5_ENABLE, Config::M5_STEPS_PER_REVOLUTION, MICRO_16);
 
   mGripper.init();
 }
@@ -37,11 +29,11 @@ void ArmBuilder::setSpeed(const float speed)
   if (speed > 0 && speed < 2)
   {
     mSpeedMultiplier = speed;
-    mBase.setMaxSpeed(mDefaultSpeed * 5 * mSpeedMultiplier);
-    mShoulder.setMaxSpeed((mDefaultSpeed / 0.8) * mSpeedMultiplier);
-    mElbow.setMaxSpeed(mDefaultSpeed * mSpeedMultiplier);
-    mWristRotate.setMaxSpeed(mDefaultSpeed * mSpeedMultiplier);
-    mWrist.setMaxSpeed(mDefaultSpeed * mSpeedMultiplier);
+    mBase.setMaxSpeedMultiplier(5 * mSpeedMultiplier);
+    mShoulder.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mElbow.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mWristRotate.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mWrist.setMaxSpeedMultiplier(mSpeedMultiplier);
   }
 }
 
@@ -50,15 +42,15 @@ void ArmBuilder::setAcceleration(const float acceleration)
   if (acceleration > 0 && acceleration < 2)
   {
     mAccelerationMultiplier = acceleration;
-    mBase.setAcceleration(mDefaultAcceleration * 5 * mAccelerationMultiplier);
-    mShoulder.setAcceleration((mDefaultAcceleration / 8) * mAccelerationMultiplier);
-    mElbow.setAcceleration(mDefaultAcceleration * mAccelerationMultiplier);
-    mWristRotate.setAcceleration(mDefaultAcceleration * mAccelerationMultiplier);
-    mWrist.setAcceleration(mDefaultAcceleration * mAccelerationMultiplier);
+    mBase.setAccelerationMultiplier(5 * mAccelerationMultiplier);
+    mShoulder.setAccelerationMultiplier(mAccelerationMultiplier);
+    mElbow.setAccelerationMultiplier(mAccelerationMultiplier);
+    mWristRotate.setAccelerationMultiplier(mAccelerationMultiplier);
+    mWrist.setAccelerationMultiplier(mAccelerationMultiplier);
   }
 }
 
-void ArmBuilder::setZeroPositoin()
+void ArmBuilder::setZeroPosition()
 {
   mBase.getMotor().setCurrentPosition(0);
   mShoulder.getMotor().setCurrentPosition(0);
@@ -123,27 +115,27 @@ JointPositions ArmBuilder::getPositions()
           mWrist.getMotor().currentPosition(), mGripper.getServo().getPosition()};
 }
 
-Base& ArmBuilder::getBase()
+RobotArmJoint& ArmBuilder::getBase()
 {
   return mBase;
 }
 
-Shoulder& ArmBuilder::getShoulder()
+RobotArmJoint& ArmBuilder::getShoulder()
 {
   return mShoulder;
 }
 
-Elbow& ArmBuilder::getElbow()
+RobotArmJoint& ArmBuilder::getElbow()
 {
   return mElbow;
 }
 
-Wrist& ArmBuilder::getWristRotate()
+RobotArmJoint& ArmBuilder::getWristRotate()
 {
   return mWristRotate;
 }
 
-Wrist& ArmBuilder::getWrist()
+RobotArmJoint& ArmBuilder::getWrist()
 {
   return mWrist;
 }
