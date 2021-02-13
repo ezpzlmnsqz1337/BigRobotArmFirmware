@@ -1,7 +1,6 @@
 #ifndef ARM_BUILDER_H
 #define ARM_BUILDER_H
 
-#include "Config.h"
 #include "Gripper.h"
 #include "RobotArmJoint.h"
 #include "Structures.h"
