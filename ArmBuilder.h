@@ -17,6 +17,8 @@ private:
 
 protected:
   long getNormalizedValue(const long value);
+  float calculateTimeToPosition(const long position, const long target, const float speed);
+  float findMaxInArray(const float* array, const int size);
 
   float mSpeedMultiplier = 1;
   float mAccelerationMultiplier = 1;
@@ -27,6 +29,7 @@ public:
   void init();
 
   void goTo(const JointPositions& jp);
+  void goToSync(const JointPositions& jp);
   void move(const JointPositions& jp);
 
   void setSpeed(const float speed);

@@ -85,11 +85,11 @@ void CommandHandler::processCommand()
   else if (command[0] == 'S')
   {
     // if speed command
-
-    int speed = atof(&command[1]);
-    if (speed != NULL)
+    //
+    int speed = atoi(&command[1]);
+    if (speed > 0 && speed < 300)
     {
-      mArmBuilder.setSpeed(speed);
+      mArmBuilder.setSpeed((float)speed / 100);
       printResponse(speed, -1, true);
     }
     else
@@ -102,10 +102,10 @@ void CommandHandler::processCommand()
   {
     // if acceleration command
 
-    int acceleration = atof(&command[1]);
-    if (acceleration != NULL)
+    int acceleration = atoi(&command[1]);
+    if (acceleration > 0 && acceleration < 300)
     {
-      mArmBuilder.setAcceleration(acceleration);
+      mArmBuilder.setAcceleration((float)acceleration / 100);
       printResponse(-1, acceleration, true);
     }
     else
