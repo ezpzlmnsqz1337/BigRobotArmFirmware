@@ -35,6 +35,7 @@ public:
   void setSpeed(const float speed);
   void setAcceleration(const float acceleration);
   void setZeroPosition();
+  void enableGripper(const bool enable);
 
   bool reachedPositions(const JointPositions& jp);
 

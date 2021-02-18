@@ -8,8 +8,19 @@ MyServo::MyServo(int _servoPin, int _minimum, int _maximum, int _pos)
 
 void MyServo::init()
 {
-  servo.attach(servoPin);
-  servo.write(pos);
+  if (!servo.attached())
+  {
+    servo.attach(servoPin);
+    servo.write(pos);
+  }
+}
+
+void MyServo::deinit()
+{
+  if (servo.attached())
+  {
+    servo.detach();
+  }
 }
 
 int MyServo::getPosition()

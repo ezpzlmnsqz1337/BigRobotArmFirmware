@@ -21,6 +21,8 @@ public:
 
   void init();
 
+  void deinit();
+
   int getPosition();
 
   void setTargetPosition(const int target);

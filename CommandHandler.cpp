@@ -8,7 +8,7 @@ CommandHandler::CommandHandler() : buffer("")
 
 void CommandHandler::init(const ArmBuilder& armBuilder)
 {
-  Serial.begin(9600);
+  Serial.begin(250000);
   mArmBuilder = armBuilder;
   reset();
 }
@@ -49,7 +49,7 @@ void CommandHandler::processCommand()
       mArmBuilder.goTo(jp);
       return;
     }
-    if (gNumber == 92)
+    else if (gNumber == 92)
     {
       // G92 - set zero position
       JointPositions jp{0, 0, 0, 0, 0, 40};
@@ -57,8 +57,7 @@ void CommandHandler::processCommand()
       mArmBuilder.setZeroPosition();
       return;
     }
-
-    if (gNumber == 0 || gNumber == 1)
+    else if (gNumber == 0)
     {
       // handle positions
       char* base = strtok(NULL, " ");
@@ -81,6 +80,31 @@ void CommandHandler::processCommand()
       mArmBuilder.goTo(jp);
       return;
     }
+    else if (gNumber == 1)
+    {
+      // G1 - handle gripper
+      char* e = strtok(NULL, " ");
+      char* p = strtok(NULL, " ");
+      int enable = e != NULL ? atol(&e[1]) : 0;
+      int position = p != NULL ? atol(&p[1]) : 0;
+      if (enable == 0 || enable == 1)
+      {
+        printResponse(enable, position, true);
+        if (enable == 1)
+        {
+          mArmBuilder.enableGripper(true);
+        }
+        else
+        {
+          mArmBuilder.enableGripper(false);
+        }
+      }
+      else
+      {
+        printResponse(-1, -1, false);
+      }
+      return;
+    }
   }
   else if (command[0] == 'S')
   {
@@ -90,11 +114,11 @@ void CommandHandler::processCommand()
     if (speed > 0 && speed < 300)
     {
       mArmBuilder.setSpeed((float)speed / 100);
-      printResponse(speed, -1, true);
+      printResponse((float)speed, (float)-1, true);
     }
     else
     {
-      printResponse(-1, -1, false);
+      printResponse((float)-1, (float)-1, false);
     }
     return;
   }
@@ -103,20 +127,45 @@ void CommandHandler::processCommand()
     // if acceleration command
 
     int acceleration = atoi(&command[1]);
-    if (acceleration > 0 && acceleration < 300)
+    if (acceleration > 0 && acceleration <= 300)
     {
       mArmBuilder.setAcceleration((float)acceleration / 100);
-      printResponse(-1, acceleration, true);
+      printResponse((float)-1, (float)acceleration, true);
     }
     else
     {
-      printResponse(-1, -1, false);
+      printResponse((float)-1, (float)-1, false);
     }
     return;
   }
 
   // if unknown command
   printResponse(mArmBuilder.getPositions(), false);
+}
+
+void CommandHandler::printResponse(const int enable, const int position, const bool valid)
+{
+  if (valid)
+  {
+    if (enable == 0)
+    {
+      Serial.println("BigRobotArm::GRIPPER-DISABLED");
+    }
+    else
+    {
+      Serial.println("BigRobotArm::GRIPPER-ENABLED");
+    }
+    if (position >= 0)
+    {
+      Serial.println("BigRobotArm::GRIPPER-POSITION-SET");
+    }
+  }
+  else
+  {
+    Serial.println("BigRobotArm::INVALID-GRIPPER-COMMAND");
+  }
+
+  Serial.println("BigRobotArm::READY");
 }
 
 void CommandHandler::printResponse(const float speed, const float acceleration, const bool valid)
