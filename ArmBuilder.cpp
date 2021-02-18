@@ -59,18 +59,6 @@ void ArmBuilder::setZeroPosition()
   mWrist.getMotor().setCurrentPosition(0);
 }
 
-void ArmBuilder::enableGripper(const bool enable)
-{
-  if (enable)
-  {
-    mGripper.getServo().init();
-  }
-  else
-  {
-    mGripper.getServo().deinit();
-  }
-}
-
 void ArmBuilder::goTo(const JointPositions& jp)
 {
   mBase.getMotor().moveTo(jp.base);
@@ -161,6 +149,51 @@ void ArmBuilder::goToSync(const JointPositions& jp)
   e.setMaxSpeed(oldSpeed[2]);
   wr.setMaxSpeed(oldSpeed[3]);
   w.setMaxSpeed(oldSpeed[4]);
+}
+
+bool ArmBuilder::isSyncEnabled()
+{
+  return mSyncMotors;
+}
+
+void ArmBuilder::setSyncMotors(const bool sync)
+{
+  mSyncMotors = sync;
+}
+
+JointSpeeds ArmBuilder::getSpeeds()
+{
+  return {
+      mBase.getMaxSpeedMultiplier(),        mShoulder.getMaxSpeedMultiplier(), mElbow.getMaxSpeedMultiplier(),
+      mWristRotate.getMaxSpeedMultiplier(), mWrist.getMaxSpeedMultiplier(),
+  };
+}
+
+JointAccelerations ArmBuilder::getAccelerations()
+{
+  return {
+      mBase.getAccelerationMultiplier() * 100,  mShoulder.getAccelerationMultiplier() * 100,
+      mElbow.getAccelerationMultiplier() * 100, mWristRotate.getAccelerationMultiplier() * 100,
+      mWrist.getAccelerationMultiplier() * 100,
+  };
+}
+
+void ArmBuilder::setSpeeds(const JointSpeeds& js)
+{
+  mBase.setMaxSpeedMultiplier(2 * ((float)js.base / 100));
+  mShoulder.setMaxSpeedMultiplier((float)js.shoulder / 100);
+  mElbow.setMaxSpeedMultiplier((float)js.elbow / 100);
+  mWristRotate.setMaxSpeedMultiplier((float)js.wristRotate / 100);
+  mWrist.setMaxSpeedMultiplier((float)js.wrist / 100);
+}
+
+void ArmBuilder::setAccelerations(const JointAccelerations& ja)
+{
+  mBase.setAccelerationMultiplier(2 * ((float)ja.base / 100));
+  mShoulder.setAccelerationMultiplier((float)ja.shoulder / 100);
+  mElbow.setAccelerationMultiplier((float)ja.elbow / 100);
+  mWristRotate.setAccelerationMultiplier((float)ja.wristRotate / 100);
+  mWrist.setAccelerationMultiplier((float)ja.wrist / 100);
 }
 
 float ArmBuilder::findMaxInArray(const float* array, const int size)

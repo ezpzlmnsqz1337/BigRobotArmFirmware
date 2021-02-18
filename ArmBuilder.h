@@ -23,6 +23,8 @@ protected:
   float mSpeedMultiplier = 1;
   float mAccelerationMultiplier = 1;
 
+  bool mSyncMotors = false;
+
 public:
   ArmBuilder();
 
@@ -35,11 +37,18 @@ public:
   void setSpeed(const float speed);
   void setAcceleration(const float acceleration);
   void setZeroPosition();
-  void enableGripper(const bool enable);
+
+  void setSpeeds(const JointSpeeds& jp);
+  void setAccelerations(const JointAccelerations& ja);
+
+  bool isSyncEnabled();
+  void setSyncMotors(const bool sync);
 
   bool reachedPositions(const JointPositions& jp);
 
   JointPositions getPositions();
+  JointAccelerations getAccelerations();
+  JointSpeeds getSpeeds();
 
   RobotArmJoint& getBase();
   RobotArmJoint& getShoulder();

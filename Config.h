@@ -9,6 +9,12 @@ static const long M2_STEPS_PER_REVOLUTION = 200;
 static const long M3_STEPS_PER_REVOLUTION = 200;
 static const long M4_STEPS_PER_REVOLUTION = 200;
 static const long M5_STEPS_PER_REVOLUTION = 200;
+
+static const long MIN_SPEED_MULTIPLIER = 1;
+static const long MAX_SPEED_MULTIPLIER = 500;
+
+static const long MIN_ACCEL_MULTIPLIER = 1;
+static const long MAX_ACCEL_MULTIPLIER = 500;
 } // namespace Config
 
 typedef enum Microstepping

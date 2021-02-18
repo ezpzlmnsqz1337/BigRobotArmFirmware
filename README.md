@@ -7,6 +7,12 @@ Firmware for BigRobotArm from instructables (https://www.instructables.com/Build
 ## Goto
 - `G0 Ba Sb Ec WRd We` where *a,b,c,d,e* are absolute steps to go to for each angle
 
+## Home
+- `G28` moves all motors in 0 position
+
+## Reset positions
+- `G92` sets current position of the motors to 0
+
 ## Speed
 - `M203 Ba Sb Ec WRd We` where *a,b,c,d,e* are speed multipliers for each motor
 - speed multiplier can be set from 1 to 300

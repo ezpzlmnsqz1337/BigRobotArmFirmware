@@ -23,6 +23,8 @@ public:
 
   void deinit();
 
+  bool isEnabled();
+
   int getPosition();
 
   void setTargetPosition(const int target);

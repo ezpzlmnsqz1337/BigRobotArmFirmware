@@ -28,6 +28,8 @@ public:
 
   void setMaxSpeedMultiplier(const float nMultiplier);
   void setAccelerationMultiplier(const float nMultiplier);
+  float getMaxSpeedMultiplier();
+  float getAccelerationMultiplier();
 
   AccelStepper& getMotor();
 };

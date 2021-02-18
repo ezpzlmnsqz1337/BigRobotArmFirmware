@@ -23,6 +23,11 @@ void MyServo::deinit()
   }
 }
 
+bool MyServo::isEnabled()
+{
+  return servo.attached();
+}
+
 int MyServo::getPosition()
 {
   return pos;

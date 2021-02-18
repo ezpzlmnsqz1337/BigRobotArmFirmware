@@ -19,4 +19,22 @@ struct JointPositions
   int gripper;
 };
 
+struct JointSpeeds
+{
+  int base;
+  int shoulder;
+  int elbow;
+  int wristRotate;
+  int wrist;
+};
+
+struct JointAccelerations
+{
+  int base;
+  int shoulder;
+  int elbow;
+  int wristRotate;
+  int wrist;
+};
+
 #endif

@@ -1,5 +1,6 @@
 #include "CommandHandler.h"
 #include "Arduino.h"
+#include "Config.h"
 
 CommandHandler::CommandHandler() : buffer("")
 {
@@ -41,182 +42,277 @@ void CommandHandler::processCommand()
   if (command[0] == 'G')
   {
     int gNumber = atoi(&command[1]);
-    if (gNumber == 28)
+    switch (gNumber)
     {
-      // G28 - home
-      JointPositions jp{0, 0, 0, 0, 0, 40};
-      printResponse(jp, true);
-      mArmBuilder.goTo(jp);
-      return;
+    case 0:
+      processGoTo(command);
+      break;
+    case 1:
+      processGripper(command);
+      break;
+    case 28:
+      processHome(command);
+      break;
+    case 92:
+      processSetZeroPosition(command);
+      break;
+    default:
+      // if unknown command
+      printInvalidCommandResponse();
     }
-    else if (gNumber == 92)
+  }
+  else if (command[0] == 'M')
+  {
+    int mNumber = atoi(&command[1]);
+    if (mNumber == 201)
     {
-      // G92 - set zero position
-      JointPositions jp{0, 0, 0, 0, 0, 40};
-      printResponse(jp, true);
-      mArmBuilder.setZeroPosition();
-      return;
+      processAccel(command);
     }
-    else if (gNumber == 0)
+    else if (mNumber == 203)
     {
-      // handle positions
-      char* base = strtok(NULL, " ");
-      char* shoulder = strtok(NULL, " ");
-      char* elbow = strtok(NULL, " ");
-      char* wristRotate = strtok(NULL, " ");
-      char* wrist = strtok(NULL, " ");
-      char* gripper = strtok(NULL, " ");
-
-      JointPositions jp;
-      jp.base = base != NULL ? atol(&base[1]) : 0;
-      jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : 0;
-      jp.elbow = elbow != NULL ? atol(&elbow[1]) : 0;
-      jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[2]) : 0;
-      jp.wrist = wrist != NULL ? atol(&wrist[1]) : 0;
-      jp.gripper = gripper != NULL ? atol(&gripper[1]) : 0;
-
-      printResponse(jp, true);
-
-      mArmBuilder.goTo(jp);
-      return;
+      processSpeed(command);
     }
-    else if (gNumber == 1)
+    else if (mNumber == 503)
     {
-      // G1 - handle gripper
-      char* e = strtok(NULL, " ");
-      char* p = strtok(NULL, " ");
-      int enable = e != NULL ? atol(&e[1]) : 0;
-      int position = p != NULL ? atol(&p[1]) : 0;
-      if (enable == 0 || enable == 1)
-      {
-        printResponse(enable, position, true);
-        if (enable == 1)
-        {
-          mArmBuilder.enableGripper(true);
-        }
-        else
-        {
-          mArmBuilder.enableGripper(false);
-        }
-      }
-      else
-      {
-        printResponse(-1, -1, false);
-      }
-      return;
+      processStatus(command);
     }
   }
   else if (command[0] == 'S')
   {
-    // if speed command
-    //
-    int speed = atoi(&command[1]);
-    if (speed > 0 && speed < 300)
-    {
-      mArmBuilder.setSpeed((float)speed / 100);
-      printResponse((float)speed, (float)-1, true);
-    }
-    else
-    {
-      printResponse((float)-1, (float)-1, false);
-    }
-    return;
+    processSyncMotors(command);
   }
-  else if (command[0] == 'A')
+  else
   {
-    // if acceleration command
-
-    int acceleration = atoi(&command[1]);
-    if (acceleration > 0 && acceleration <= 300)
-    {
-      mArmBuilder.setAcceleration((float)acceleration / 100);
-      printResponse((float)-1, (float)acceleration, true);
-    }
-    else
-    {
-      printResponse((float)-1, (float)-1, false);
-    }
-    return;
+    // if unknown command
+    printInvalidCommandResponse();
   }
-
-  // if unknown command
-  printResponse(mArmBuilder.getPositions(), false);
+  Serial.println("BigRobotArm::READY");
 }
 
-void CommandHandler::printResponse(const int enable, const int position, const bool valid)
+void CommandHandler::processGoTo(const char* command)
+{
+  // handle positions
+  char* base = strtok(NULL, " ");
+  char* shoulder = strtok(NULL, " ");
+  char* elbow = strtok(NULL, " ");
+  char* wristRotate = strtok(NULL, " ");
+  char* wrist = strtok(NULL, " ");
+
+  JointPositions jp = mArmBuilder.getPositions();
+  jp.base = base != NULL ? atol(&base[1]) : jp.base;
+  jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : jp.shoulder;
+  jp.elbow = elbow != NULL ? atol(&elbow[1]) : jp.elbow;
+  jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[2]) : jp.wristRotate;
+  jp.wrist = wrist != NULL ? atol(&wrist[1]) : jp.wrist;
+
+  mArmBuilder.goTo(jp);
+
+  printPositionResponse(true);
+}
+
+void CommandHandler::processHome(const char* command)
+{
+  // G28 - home
+  JointPositions jp{0, 0, 0, 0, 0, 40};
+  mArmBuilder.goTo(jp);
+  printPositionResponse(true);
+}
+
+void CommandHandler::processSetZeroPosition(const char* command)
+{
+  // G92 - set zero position
+  mArmBuilder.setZeroPosition();
+  printPositionResponse(true);
+}
+
+void CommandHandler::processSpeed(const char* command)
+{
+  // if speed command
+  int speed = atoi(&command[1]);
+  if (speed > Config::MIN_SPEED_MULTIPLIER && speed < Config::MAX_SPEED_MULTIPLIER)
+  {
+    mArmBuilder.setSpeed((float)speed / 100);
+    printSpeedResponse(true);
+  }
+  else
+  {
+    printSpeedResponse(false);
+  }
+}
+
+void CommandHandler::processAccel(const char* command)
+{
+  // if acceleration command
+  int acceleration = atoi(&command[1]);
+  if (acceleration > Config::MIN_ACCEL_MULTIPLIER && acceleration <= Config::MAX_ACCEL_MULTIPLIER)
+  {
+    mArmBuilder.setAcceleration((float)acceleration / 100);
+    printAccelerationResponse(true);
+  }
+  else
+  {
+    printAccelerationResponse(false);
+  }
+}
+
+void CommandHandler::processGripper(const char* command)
+{
+  // G1 - handle gripper
+  char* e = strtok(NULL, " ");
+  char* p = strtok(NULL, " ");
+  int enable = e != NULL ? atol(&e[1]) : 0;
+  int position = p != NULL ? atol(&p[1]) : 0;
+  if (enable == 1)
+  {
+    mArmBuilder.getGripper().init();
+    JointPositions jp = mArmBuilder.getPositions();
+    jp.gripper = position;
+    mArmBuilder.goTo(jp);
+    printGripperResponse(true);
+  }
+  else if (enable == 0)
+  {
+    mArmBuilder.getGripper().getServo().deinit();
+    printGripperResponse(true);
+  }
+  else
+  {
+    printGripperResponse(false);
+  }
+}
+
+void CommandHandler::processSyncMotors(const char* command)
+{
+  int sync = atoi(&command[1]);
+  if (sync == 0)
+  {
+    mArmBuilder.setSyncMotors(false);
+    printSyncMotorsResponse(true);
+  }
+  else if (sync == 1)
+  {
+    mArmBuilder.setSyncMotors(true);
+    printSyncMotorsResponse(true);
+  }
+  else
+  {
+    printSyncMotorsResponse(false);
+  }
+}
+
+void CommandHandler::processStatus(const char* command)
+{
+  printPositionResponse(true);
+  printGripperResponse(true);
+  printSpeedResponse(true);
+  printAccelerationResponse(true);
+  printSyncMotorsResponse(true);
+}
+
+void CommandHandler::printGripperResponse(const bool valid)
 {
   if (valid)
   {
-    if (enable == 0)
-    {
-      Serial.println("BigRobotArm::GRIPPER-DISABLED");
-    }
-    else
-    {
-      Serial.println("BigRobotArm::GRIPPER-ENABLED");
-    }
-    if (position >= 0)
-    {
-      Serial.println("BigRobotArm::GRIPPER-POSITION-SET");
-    }
+    bool enable = mArmBuilder.getGripper().getServo().isEnabled();
+    int position = mArmBuilder.getPositions().gripper;
+    Serial.print("BigRobotArm::GRIPPER: ");
+    Serial.print("E");
+    Serial.print(enable ? 1 : 0);
+    Serial.print("P");
+    Serial.print(position);
   }
   else
   {
     Serial.println("BigRobotArm::INVALID-GRIPPER-COMMAND");
   }
-
-  Serial.println("BigRobotArm::READY");
 }
 
-void CommandHandler::printResponse(const float speed, const float acceleration, const bool valid)
+void CommandHandler::printSpeedResponse(const bool valid)
 {
   if (valid)
   {
-    if (speed >= 0)
-    {
-      Serial.println("BigRobotArm::SPEED-SET");
-      Serial.print("SPEED: ");
-      Serial.println(speed);
-    }
-    if (acceleration >= 0)
-    {
-      Serial.println("BigRobotArm::ACCELERATION-SET");
-      Serial.print("ACCELERATION: ");
-      Serial.println(acceleration);
-    }
+    JointSpeeds js = mArmBuilder.getSpeeds();
+    Serial.print("BigRobotArm::SPEED: ");
+    Serial.print("B");
+    Serial.print(js.base);
+    Serial.print(" S");
+    Serial.print(js.shoulder);
+    Serial.print(" E");
+    Serial.print(js.elbow);
+    Serial.print(" WR");
+    Serial.print(js.wristRotate);
+    Serial.print(" W");
+    Serial.print(js.wrist);
   }
   else
   {
-    Serial.println("BigRobotArm::INVALID-SPEED-ACCEL");
+    Serial.println("BigRobotArm::INVALID-SPEED");
   }
-
-  Serial.println("BigRobotArm::READY");
 }
 
-void CommandHandler::printResponse(const JointPositions& jp, bool valid)
+void CommandHandler::printAccelerationResponse(const bool valid)
 {
+  if (valid)
+  {
+    JointAccelerations ja = mArmBuilder.getAccelerations();
+    Serial.print("BigRobotArm::ACCELERATION: ");
+    Serial.print("B");
+    Serial.print(ja.base);
+    Serial.print(" S");
+    Serial.print(ja.shoulder);
+    Serial.print(" E");
+    Serial.print(ja.elbow);
+    Serial.print(" WR");
+    Serial.print(ja.wristRotate);
+    Serial.print(" W");
+    Serial.println(ja.wrist);
+  }
+  else
+  {
+    Serial.println("BigRobotArm::INVALID-ACCEL");
+  }
+}
+
+void CommandHandler::printPositionResponse(const bool valid)
+{
+  JointPositions jp = mArmBuilder.getPositions();
   if (valid)
   {
     Serial.println("BigRobotArm::MOVING-TO");
+    Serial.print("BigRobotArm::POSITION: ");
+    Serial.print("B");
+    Serial.print(jp.base);
+    Serial.print(" S");
+    Serial.print(jp.shoulder);
+    Serial.print(" E");
+    Serial.print(jp.elbow);
+    Serial.print(" WR");
+    Serial.print(jp.wristRotate);
+    Serial.print(" W");
+    Serial.print(jp.wrist);
   }
   else
   {
-    Serial.println("BigRobotArm::INVALID-COMMAND");
+    printInvalidCommandResponse();
   }
-  Serial.print("BigRobotArm::POSITION ");
-  Serial.print("B");
-  Serial.print(jp.base);
-  Serial.print(" S");
-  Serial.print(jp.shoulder);
-  Serial.print(" E");
-  Serial.print(jp.elbow);
-  Serial.print(" WR");
-  Serial.print(jp.wristRotate);
-  Serial.print(" W");
-  Serial.print(jp.wrist);
-  Serial.print(" G");
-  Serial.println(jp.gripper);
-  Serial.println("BigRobotArm::READY");
+}
+
+void CommandHandler::printSyncMotorsResponse(const bool valid)
+{
+  if (valid)
+  {
+    Serial.print("BigRobotArm::SYNC-MOTORS: ");
+    Serial.println(mArmBuilder.isSyncEnabled() ? 1 : 0);
+  }
+  else
+  {
+    printInvalidCommandResponse();
+  }
+}
+
+void CommandHandler::printInvalidCommandResponse()
+{
+  Serial.println("BigRobotArm::INVALID-COMMAND");
 }
 
 void CommandHandler::reset()

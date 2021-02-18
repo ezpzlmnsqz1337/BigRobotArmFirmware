@@ -59,3 +59,13 @@ int RobotArmJoint::getAcceleration()
 {
   return mAcceleration;
 }
+
+float RobotArmJoint::getMaxSpeedMultiplier()
+{
+  return mMaxSpeed / mStepsPerRevolution;
+}
+
+float RobotArmJoint::getAccelerationMultiplier()
+{
+  return mAcceleration / mStepsPerRevolution;
+}
