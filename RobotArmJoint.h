@@ -18,13 +18,13 @@ protected:
 
 public:
   RobotArmJoint();
-  void init(const int nStepPin, const int nDirPin, const int nEnablePin, const long nStepsPerRevolution,
+  void init(const int32_t nStepPin, const int32_t nDirPin, const int32_t nEnablePin, const long nStepsPerRevolution,
             Microstepping microsteping);
 
   void setMaxSpeed(const float maxSpeed);
-  int getMaxSpeed();
+  int32_t getMaxSpeed();
   void setAcceleration(const float acceleration);
-  int getAcceleration();
+  int32_t getAcceleration();
 
   void setMaxSpeedMultiplier(const float nMultiplier);
   void setAccelerationMultiplier(const float nMultiplier);

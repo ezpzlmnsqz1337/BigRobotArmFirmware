@@ -26,7 +26,7 @@ void ArmBuilder::init()
 
 void ArmBuilder::setSpeed(const float speed)
 {
-  if (speed > 0 && speed < 2)
+  if (speed > 0 && speed < 5)
   {
     mSpeedMultiplier = speed;
     mBase.setMaxSpeedMultiplier(2 * mSpeedMultiplier);
@@ -39,7 +39,7 @@ void ArmBuilder::setSpeed(const float speed)
 
 void ArmBuilder::setAcceleration(const float acceleration)
 {
-  if (acceleration > 0 && acceleration < 2)
+  if (acceleration > 0 && acceleration < 5)
   {
     mAccelerationMultiplier = acceleration;
     mBase.setAccelerationMultiplier(2 * mAccelerationMultiplier);
@@ -164,8 +164,9 @@ void ArmBuilder::setSyncMotors(const bool sync)
 JointSpeeds ArmBuilder::getSpeeds()
 {
   return {
-      mBase.getMaxSpeedMultiplier(),        mShoulder.getMaxSpeedMultiplier(), mElbow.getMaxSpeedMultiplier(),
-      mWristRotate.getMaxSpeedMultiplier(), mWrist.getMaxSpeedMultiplier(),
+      mBase.getMaxSpeedMultiplier() * 100,  mShoulder.getMaxSpeedMultiplier() * 100,
+      mElbow.getMaxSpeedMultiplier() * 100, mWristRotate.getMaxSpeedMultiplier() * 100,
+      mWrist.getMaxSpeedMultiplier() * 100,
   };
 }
 
@@ -196,10 +197,10 @@ void ArmBuilder::setAccelerations(const JointAccelerations& ja)
   mWrist.setAccelerationMultiplier((float)ja.wrist / 100);
 }
 
-float ArmBuilder::findMaxInArray(const float* array, const int size)
+float ArmBuilder::findMaxInArray(const float* array, const int32_t size)
 {
   float max = 0;
-  for (int i = 0; i < size; i++)
+  for (int32_t i = 0; i < size; i++)
   {
     if (array[i] > max)
     {

@@ -18,7 +18,7 @@ private:
 protected:
   long getNormalizedValue(const long value);
   float calculateTimeToPosition(const long position, const long target, const float speed);
-  float findMaxInArray(const float* array, const int size);
+  float findMaxInArray(const float* array, const int32_t size);
 
   float mSpeedMultiplier = 1;
   float mAccelerationMultiplier = 1;

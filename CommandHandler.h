@@ -7,13 +7,13 @@
 
 // This is the content of the .h file, which is where the declarations go
 
-const int BUFFER_SIZE = 50;
+const int32_t BUFFER_SIZE = 50;
 
 class CommandHandler
 {
 private:
   char buffer[BUFFER_SIZE];
-  int sofar;
+  int32_t sofar;
   ArmBuilder mArmBuilder;
 
   void processGoTo(const char* command);

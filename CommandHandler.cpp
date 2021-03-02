@@ -41,7 +41,7 @@ void CommandHandler::processCommand()
 
   if (command[0] == 'G')
   {
-    int gNumber = atoi(&command[1]);
+    int32_t gNumber = atoi(&command[1]);
     switch (gNumber)
     {
     case 0:
@@ -63,7 +63,7 @@ void CommandHandler::processCommand()
   }
   else if (command[0] == 'M')
   {
-    int mNumber = atoi(&command[1]);
+    int32_t mNumber = atoi(&command[1]);
     if (mNumber == 201)
     {
       processAccel(command);
@@ -128,31 +128,41 @@ void CommandHandler::processSetZeroPosition(const char* command)
 void CommandHandler::processSpeed(const char* command)
 {
   // if speed command
-  int speed = atoi(&command[1]);
-  if (speed > Config::MIN_SPEED_MULTIPLIER && speed < Config::MAX_SPEED_MULTIPLIER)
-  {
-    mArmBuilder.setSpeed((float)speed / 100);
-    printSpeedResponse(true);
-  }
-  else
-  {
-    printSpeedResponse(false);
-  }
+  char* base = strtok(NULL, " ");
+  char* shoulder = strtok(NULL, " ");
+  char* elbow = strtok(NULL, " ");
+  char* wristRotate = strtok(NULL, " ");
+  char* wrist = strtok(NULL, " ");
+
+  JointSpeeds js = mArmBuilder.getSpeeds();
+  js.base = base != NULL ? atoi(&base[1]) : js.base;
+  js.shoulder = shoulder != NULL ? atoi(&shoulder[1]) : js.shoulder;
+  js.elbow = elbow != NULL ? atoi(&elbow[1]) : js.elbow;
+  js.wristRotate = wristRotate != NULL ? atoi(&wristRotate[2]) : js.wristRotate;
+  js.wrist = wrist != NULL ? atoi(&wrist[1]) : js.wrist;
+
+  mArmBuilder.setSpeeds(js);
+  printSpeedResponse(true);
 }
 
 void CommandHandler::processAccel(const char* command)
 {
   // if acceleration command
-  int acceleration = atoi(&command[1]);
-  if (acceleration > Config::MIN_ACCEL_MULTIPLIER && acceleration <= Config::MAX_ACCEL_MULTIPLIER)
-  {
-    mArmBuilder.setAcceleration((float)acceleration / 100);
-    printAccelerationResponse(true);
-  }
-  else
-  {
-    printAccelerationResponse(false);
-  }
+  char* base = strtok(NULL, " ");
+  char* shoulder = strtok(NULL, " ");
+  char* elbow = strtok(NULL, " ");
+  char* wristRotate = strtok(NULL, " ");
+  char* wrist = strtok(NULL, " ");
+
+  JointAccelerations ja = mArmBuilder.getAccelerations();
+  ja.base = base != NULL ? atoi(&base[1]) : ja.base;
+  ja.shoulder = shoulder != NULL ? atoi(&shoulder[1]) : ja.shoulder;
+  ja.elbow = elbow != NULL ? atoi(&elbow[1]) : ja.elbow;
+  ja.wristRotate = wristRotate != NULL ? atoi(&wristRotate[2]) : ja.wristRotate;
+  ja.wrist = wrist != NULL ? atoi(&wrist[1]) : ja.wrist;
+
+  mArmBuilder.setAccelerations(ja);
+  printAccelerationResponse(true);
 }
 
 void CommandHandler::processGripper(const char* command)
@@ -160,8 +170,8 @@ void CommandHandler::processGripper(const char* command)
   // G1 - handle gripper
   char* e = strtok(NULL, " ");
   char* p = strtok(NULL, " ");
-  int enable = e != NULL ? atol(&e[1]) : 0;
-  int position = p != NULL ? atol(&p[1]) : 0;
+  int32_t enable = e != NULL ? atol(&e[1]) : 0;
+  int32_t position = p != NULL ? atol(&p[1]) : 0;
   if (enable == 1)
   {
     mArmBuilder.getGripper().init();
@@ -183,7 +193,7 @@ void CommandHandler::processGripper(const char* command)
 
 void CommandHandler::processSyncMotors(const char* command)
 {
-  int sync = atoi(&command[1]);
+  int32_t sync = atoi(&command[1]);
   if (sync == 0)
   {
     mArmBuilder.setSyncMotors(false);
@@ -214,12 +224,12 @@ void CommandHandler::printGripperResponse(const bool valid)
   if (valid)
   {
     bool enable = mArmBuilder.getGripper().getServo().isEnabled();
-    int position = mArmBuilder.getPositions().gripper;
+    int32_t position = mArmBuilder.getPositions().gripper;
     Serial.print("BigRobotArm::GRIPPER: ");
     Serial.print("E");
     Serial.print(enable ? 1 : 0);
     Serial.print("P");
-    Serial.print(position);
+    Serial.println(position);
   }
   else
   {
@@ -242,7 +252,7 @@ void CommandHandler::printSpeedResponse(const bool valid)
     Serial.print(" WR");
     Serial.print(js.wristRotate);
     Serial.print(" W");
-    Serial.print(js.wrist);
+    Serial.println(js.wrist);
   }
   else
   {
@@ -289,7 +299,7 @@ void CommandHandler::printPositionResponse(const bool valid)
     Serial.print(" WR");
     Serial.print(jp.wristRotate);
     Serial.print(" W");
-    Serial.print(jp.wrist);
+    Serial.println(jp.wrist);
   }
   else
   {

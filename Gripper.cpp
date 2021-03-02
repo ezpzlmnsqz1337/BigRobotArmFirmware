@@ -1,7 +1,7 @@
 #include "Gripper.h"
 
-const int minPos = 40;
-const int maxPos = 150;
+const int32_t minPos = 40;
+const int32_t maxPos = 150;
 
 Gripper::Gripper() : mServo(3, minPos, maxPos, 90)
 {

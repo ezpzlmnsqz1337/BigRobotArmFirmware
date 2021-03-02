@@ -4,8 +4,8 @@ RobotArmJoint::RobotArmJoint()
 {
 }
 
-void RobotArmJoint::init(const int nStepPin, const int nDirPin, const int nEnablePin, const long nStepsPerRevolution,
-                         Microstepping microstepping)
+void RobotArmJoint::init(const int32_t nStepPin, const int32_t nDirPin, const int32_t nEnablePin,
+                         const long nStepsPerRevolution, Microstepping microstepping)
 {
   mStepPin = nStepPin;
   mDirPin = nDirPin;
@@ -36,26 +36,28 @@ void RobotArmJoint::setMaxSpeed(const float maxSpeed)
 
 void RobotArmJoint::setMaxSpeedMultiplier(const float nMultiplier)
 {
-  mMotor.setMaxSpeed(mStepsPerRevolution * nMultiplier);
+  mMaxSpeed = mStepsPerRevolution * nMultiplier;
+  mMotor.setMaxSpeed(mMaxSpeed);
 }
 
 void RobotArmJoint::setAcceleration(const float acceleration)
 {
-  mMaxSpeed = acceleration;
+  mAcceleration = acceleration;
   mMotor.setAcceleration(acceleration);
 }
 
 void RobotArmJoint::setAccelerationMultiplier(const float nMultiplier)
 {
-  mMotor.setAcceleration(mStepsPerRevolution * nMultiplier);
+  mAcceleration = mStepsPerRevolution * nMultiplier;
+  mMotor.setAcceleration(mAcceleration);
 }
 
-int RobotArmJoint::getMaxSpeed()
+int32_t RobotArmJoint::getMaxSpeed()
 {
   return mMaxSpeed;
 }
 
-int RobotArmJoint::getAcceleration()
+int32_t RobotArmJoint::getAcceleration()
 {
   return mAcceleration;
 }

@@ -1,7 +1,7 @@
 #include "MyServo.h"
 #include "Arduino.h"
 
-MyServo::MyServo(int _servoPin, int _minimum, int _maximum, int _pos)
+MyServo::MyServo(int32_t _servoPin, int32_t _minimum, int32_t _maximum, int32_t _pos)
     : servoPin(_servoPin), minimum(_minimum), maximum(_maximum), pos(_pos), targetPosition(_pos)
 {
 }
@@ -28,24 +28,24 @@ bool MyServo::isEnabled()
   return servo.attached();
 }
 
-int MyServo::getPosition()
+int32_t MyServo::getPosition()
 {
   return pos;
 }
 
-void MyServo::setTargetPosition(const int target)
+void MyServo::setTargetPosition(const int32_t target)
 {
   targetPosition = target;
 }
 
-void MyServo::moveBy(int value)
+void MyServo::moveBy(int32_t value)
 {
-  int newValue = constrain(pos + value, minimum, maximum);
+  int32_t newValue = constrain(pos + value, minimum, maximum);
   servo.write(newValue);
   pos = newValue;
 }
 
-void MyServo::moveTo(int value)
+void MyServo::moveTo(int32_t value)
 {
   // if already there, return
   if (pos == value)
@@ -54,10 +54,10 @@ void MyServo::moveTo(int value)
   }
 
   // get value in between the servo limits
-  int newValue = constrain(value, minimum, maximum);
+  int32_t newValue = constrain(value, minimum, maximum);
 
   // increment with delay to slow down the servo movement
-  int increment = newValue > pos ? +1 : -1;
+  int32_t increment = newValue > pos ? +1 : -1;
   while (pos != newValue)
   {
     moveBy(increment);
