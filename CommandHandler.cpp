@@ -228,7 +228,7 @@ void CommandHandler::printGripperResponse(const bool valid)
     Serial.print("BigRobotArm::GRIPPER: ");
     Serial.print("E");
     Serial.print(enable ? 1 : 0);
-    Serial.print("P");
+    Serial.print(" P");
     Serial.println(position);
   }
   else

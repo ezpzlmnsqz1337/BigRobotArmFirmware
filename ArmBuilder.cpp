@@ -29,7 +29,7 @@ void ArmBuilder::setSpeed(const float speed)
   if (speed > 0 && speed < 5)
   {
     mSpeedMultiplier = speed;
-    mBase.setMaxSpeedMultiplier(2 * mSpeedMultiplier);
+    mBase.setMaxSpeedMultiplier(mSpeedMultiplier);
     mShoulder.setMaxSpeedMultiplier(mSpeedMultiplier);
     mElbow.setMaxSpeedMultiplier(mSpeedMultiplier);
     mWristRotate.setMaxSpeedMultiplier(mSpeedMultiplier);
@@ -42,7 +42,7 @@ void ArmBuilder::setAcceleration(const float acceleration)
   if (acceleration > 0 && acceleration < 5)
   {
     mAccelerationMultiplier = acceleration;
-    mBase.setAccelerationMultiplier(2 * mAccelerationMultiplier);
+    mBase.setAccelerationMultiplier(mAccelerationMultiplier);
     mShoulder.setAccelerationMultiplier(mAccelerationMultiplier);
     mElbow.setAccelerationMultiplier(mAccelerationMultiplier);
     mWristRotate.setAccelerationMultiplier(mAccelerationMultiplier);
@@ -181,7 +181,7 @@ JointAccelerations ArmBuilder::getAccelerations()
 
 void ArmBuilder::setSpeeds(const JointSpeeds& js)
 {
-  mBase.setMaxSpeedMultiplier(2 * ((float)js.base / 100));
+  mBase.setMaxSpeedMultiplier(((float)js.base / 100));
   mShoulder.setMaxSpeedMultiplier((float)js.shoulder / 100);
   mElbow.setMaxSpeedMultiplier((float)js.elbow / 100);
   mWristRotate.setMaxSpeedMultiplier((float)js.wristRotate / 100);
@@ -190,7 +190,7 @@ void ArmBuilder::setSpeeds(const JointSpeeds& js)
 
 void ArmBuilder::setAccelerations(const JointAccelerations& ja)
 {
-  mBase.setAccelerationMultiplier(2 * ((float)ja.base / 100));
+  mBase.setAccelerationMultiplier(((float)ja.base / 100));
   mShoulder.setAccelerationMultiplier((float)ja.shoulder / 100);
   mElbow.setAccelerationMultiplier((float)ja.elbow / 100);
   mWristRotate.setAccelerationMultiplier((float)ja.wristRotate / 100);
