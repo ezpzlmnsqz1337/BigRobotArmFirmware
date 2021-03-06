@@ -8,57 +8,49 @@ ArmBuilder::ArmBuilder()
 
 void ArmBuilder::init()
 {
-  mBase.init(54, 55, 38); // hardcoded dir pins
-  mBase.setMaxSpeed(mDefaultSpeed * 5);
-  mBase.setAcceleration(mDefaultAcceleration * 5);
+  mBase.init(M1_STEP, M1_DIR, M1_ENABLE, Config::M1_STEPS_PER_REVOLUTION, MICRO_16);
+  mBase.setMaxSpeedMultiplier(2);
+  mBase.setAccelerationMultiplier(2);
 
-  mShoulder.init(60, 61, 56);
-  mShoulder.setMaxSpeed(mDefaultSpeed / 8);
-  mShoulder.setAcceleration(mDefaultAcceleration / 8);
+  mShoulder.init(M2_STEP, M2_DIR, M2_ENABLE, Config::M2_STEPS_PER_REVOLUTION, HALF_STEPPING);
   mShoulder.getMotor().setPinsInverted(true);
 
-  mElbow.init(46, 48, 62);
-  mElbow.setMaxSpeed(mDefaultSpeed);
-  mElbow.setAcceleration(mDefaultAcceleration);
+  mElbow.init(M3_STEP, M3_DIR, M3_ENABLE, Config::M3_STEPS_PER_REVOLUTION, MICRO_16);
 
-  mWristRotate.init(26, 28, 24);
-  mWristRotate.setMaxSpeed(mDefaultSpeed);
-  mWristRotate.setAcceleration(mDefaultAcceleration);
+  mWristRotate.init(M4_STEP, M4_DIR, M4_ENABLE, Config::M4_STEPS_PER_REVOLUTION, MICRO_16);
 
-  mWrist.init(36, 34, 30);
-  mWrist.setMaxSpeed(mDefaultSpeed);
-  mWrist.setAcceleration(mDefaultAcceleration);
+  mWrist.init(M5_STEP, M5_DIR, M5_ENABLE, Config::M5_STEPS_PER_REVOLUTION, MICRO_16);
 
   mGripper.init();
 }
 
 void ArmBuilder::setSpeed(const float speed)
 {
-  if (speed > 0 && speed < 2)
+  if (speed > 0 && speed < 5)
   {
     mSpeedMultiplier = speed;
-    mBase.setMaxSpeed(mDefaultSpeed * 5 * mSpeedMultiplier);
-    mShoulder.setMaxSpeed((mDefaultSpeed / 0.8) * mSpeedMultiplier);
-    mElbow.setMaxSpeed(mDefaultSpeed * mSpeedMultiplier);
-    mWristRotate.setMaxSpeed(mDefaultSpeed * mSpeedMultiplier);
-    mWrist.setMaxSpeed(mDefaultSpeed * mSpeedMultiplier);
+    mBase.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mShoulder.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mElbow.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mWristRotate.setMaxSpeedMultiplier(mSpeedMultiplier);
+    mWrist.setMaxSpeedMultiplier(mSpeedMultiplier);
   }
 }
 
 void ArmBuilder::setAcceleration(const float acceleration)
 {
-  if (acceleration > 0 && acceleration < 2)
+  if (acceleration > 0 && acceleration < 5)
   {
     mAccelerationMultiplier = acceleration;
-    mBase.setAcceleration(mDefaultAcceleration * 5 * mAccelerationMultiplier);
-    mShoulder.setAcceleration((mDefaultAcceleration / 8) * mAccelerationMultiplier);
-    mElbow.setAcceleration(mDefaultAcceleration * mAccelerationMultiplier);
-    mWristRotate.setAcceleration(mDefaultAcceleration * mAccelerationMultiplier);
-    mWrist.setAcceleration(mDefaultAcceleration * mAccelerationMultiplier);
+    mBase.setAccelerationMultiplier(mAccelerationMultiplier);
+    mShoulder.setAccelerationMultiplier(mAccelerationMultiplier);
+    mElbow.setAccelerationMultiplier(mAccelerationMultiplier);
+    mWristRotate.setAccelerationMultiplier(mAccelerationMultiplier);
+    mWrist.setAccelerationMultiplier(mAccelerationMultiplier);
   }
 }
 
-void ArmBuilder::setZeroPositoin()
+void ArmBuilder::setZeroPosition()
 {
   mBase.getMotor().setCurrentPosition(0);
   mShoulder.getMotor().setCurrentPosition(0);
@@ -85,6 +77,142 @@ void ArmBuilder::goTo(const JointPositions& jp)
     mWrist.getMotor().run();
     mGripper.getServo().loop();
   }
+}
+
+void ArmBuilder::goToSync(const JointPositions& jp)
+{
+  AccelStepper& b = mBase.getMotor();
+  AccelStepper& s = mShoulder.getMotor();
+  AccelStepper& e = mElbow.getMotor();
+  AccelStepper& wr = mWristRotate.getMotor();
+  AccelStepper& w = mWrist.getMotor();
+
+  // set target positions
+  b.moveTo(jp.base);
+  s.moveTo(jp.shoulder);
+  e.moveTo(jp.elbow);
+  wr.moveTo(jp.wristRotate);
+  w.moveTo(jp.wrist);
+  mGripper.getServo().setTargetPosition(jp.gripper);
+
+  // store old max speed to set it back after the movement
+  float oldSpeed[5]{b.maxSpeed(), s.maxSpeed(), e.maxSpeed(), wr.maxSpeed(), w.maxSpeed()};
+  // calculate how long it takes for each motor to get to target position
+  float timeToPos[5]{calculateTimeToPosition(b.currentPosition(), jp.base, b.maxSpeed()),
+                     calculateTimeToPosition(s.currentPosition(), jp.shoulder, s.maxSpeed()),
+                     calculateTimeToPosition(e.currentPosition(), jp.elbow, e.maxSpeed()),
+                     calculateTimeToPosition(wr.currentPosition(), jp.wristRotate, wr.maxSpeed()),
+                     calculateTimeToPosition(w.currentPosition(), jp.wrist, w.maxSpeed())};
+
+  // find slowest time
+  float maxTime = findMaxInArray(timeToPos, 5);
+  if (maxTime == 0)
+  {
+    return;
+  }
+
+  // for each motor set new max speed according to formula:
+  // (slowest time / this motor time) * (1 / this motor max speed)
+  if (timeToPos[0] > 0)
+  {
+    b.setMaxSpeed((timeToPos[0] / maxTime) * b.maxSpeed());
+  }
+  if (timeToPos[1] > 0)
+  {
+    s.setMaxSpeed((timeToPos[1] / maxTime) * s.maxSpeed());
+  }
+  if (timeToPos[2] > 0)
+  {
+    e.setMaxSpeed((timeToPos[2] / maxTime) * e.maxSpeed());
+  }
+  if (timeToPos[3] > 0)
+  {
+    wr.setMaxSpeed((timeToPos[3] / maxTime) * wr.maxSpeed());
+  }
+  if (timeToPos[4] > 0)
+  {
+    w.setMaxSpeed((timeToPos[4] / maxTime) * w.maxSpeed());
+  }
+
+  while (!reachedPositions(jp))
+  {
+    b.run();
+    s.run();
+    e.run();
+    wr.run();
+    w.run();
+    mGripper.getServo().loop();
+  }
+
+  b.setMaxSpeed(oldSpeed[0]);
+  s.setMaxSpeed(oldSpeed[1]);
+  e.setMaxSpeed(oldSpeed[2]);
+  wr.setMaxSpeed(oldSpeed[3]);
+  w.setMaxSpeed(oldSpeed[4]);
+}
+
+bool ArmBuilder::isSyncEnabled()
+{
+  return mSyncMotors;
+}
+
+void ArmBuilder::setSyncMotors(const bool sync)
+{
+  mSyncMotors = sync;
+}
+
+JointSpeeds ArmBuilder::getSpeeds()
+{
+  return {
+      mBase.getMaxSpeedMultiplier() * 100,  mShoulder.getMaxSpeedMultiplier() * 100,
+      mElbow.getMaxSpeedMultiplier() * 100, mWristRotate.getMaxSpeedMultiplier() * 100,
+      mWrist.getMaxSpeedMultiplier() * 100,
+  };
+}
+
+JointAccelerations ArmBuilder::getAccelerations()
+{
+  return {
+      mBase.getAccelerationMultiplier() * 100,  mShoulder.getAccelerationMultiplier() * 100,
+      mElbow.getAccelerationMultiplier() * 100, mWristRotate.getAccelerationMultiplier() * 100,
+      mWrist.getAccelerationMultiplier() * 100,
+  };
+}
+
+void ArmBuilder::setSpeeds(const JointSpeeds& js)
+{
+  mBase.setMaxSpeedMultiplier(((float)js.base / 100));
+  mShoulder.setMaxSpeedMultiplier((float)js.shoulder / 100);
+  mElbow.setMaxSpeedMultiplier((float)js.elbow / 100);
+  mWristRotate.setMaxSpeedMultiplier((float)js.wristRotate / 100);
+  mWrist.setMaxSpeedMultiplier((float)js.wrist / 100);
+}
+
+void ArmBuilder::setAccelerations(const JointAccelerations& ja)
+{
+  mBase.setAccelerationMultiplier(((float)ja.base / 100));
+  mShoulder.setAccelerationMultiplier((float)ja.shoulder / 100);
+  mElbow.setAccelerationMultiplier((float)ja.elbow / 100);
+  mWristRotate.setAccelerationMultiplier((float)ja.wristRotate / 100);
+  mWrist.setAccelerationMultiplier((float)ja.wrist / 100);
+}
+
+float ArmBuilder::findMaxInArray(const float* array, const int32_t size)
+{
+  float max = 0;
+  for (int32_t i = 0; i < size; i++)
+  {
+    if (array[i] > max)
+    {
+      max = array[i];
+    }
+  }
+  return max;
+}
+
+float ArmBuilder::calculateTimeToPosition(const long position, const long target, const float speed)
+{
+  return abs(position - target) / speed;
 }
 
 void ArmBuilder::move(const JointPositions& jp)
@@ -123,27 +251,27 @@ JointPositions ArmBuilder::getPositions()
           mWrist.getMotor().currentPosition(), mGripper.getServo().getPosition()};
 }
 
-Base& ArmBuilder::getBase()
+RobotArmJoint& ArmBuilder::getBase()
 {
   return mBase;
 }
 
-Shoulder& ArmBuilder::getShoulder()
+RobotArmJoint& ArmBuilder::getShoulder()
 {
   return mShoulder;
 }
 
-Elbow& ArmBuilder::getElbow()
+RobotArmJoint& ArmBuilder::getElbow()
 {
   return mElbow;
 }
 
-Wrist& ArmBuilder::getWristRotate()
+RobotArmJoint& ArmBuilder::getWristRotate()
 {
   return mWristRotate;
 }
 
-Wrist& ArmBuilder::getWrist()
+RobotArmJoint& ArmBuilder::getWrist()
 {
   return mWrist;
 }

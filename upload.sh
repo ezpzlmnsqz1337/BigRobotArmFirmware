@@ -10,7 +10,7 @@
 #       --optimize-for-debug           Optional, optimize compile output for debugging, rather than for release.
 #       --output-dir string            Save build artifacts in this directory.
 #   -p, --port string                  Upload port, e.g.: COM10 or /dev/ttyACM0
-#       --preprocess                   Print preprocessed code to stdout instead of compiling.
+#       --preprocess                   Print32_t preprocessed code to stdout instead of compiling.
 #   -P, --programmer string            Optional, use the specified programmer to upload.
 #       --quiet                        Optional, suppresses almost every output.
 #       --show-properties              Show all build properties used instead of compiling.

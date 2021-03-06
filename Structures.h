@@ -3,10 +3,10 @@
 
 struct Inputs
 {
-  int leftX;
-  int leftY;
-  int rightX;
-  int rightY;
+  int32_t leftX;
+  int32_t leftY;
+  int32_t rightX;
+  int32_t rightY;
 };
 
 struct JointPositions
@@ -16,7 +16,25 @@ struct JointPositions
   long elbow;
   long wristRotate;
   long wrist;
-  int gripper;
+  int32_t gripper;
+};
+
+struct JointSpeeds
+{
+  int32_t base;
+  int32_t shoulder;
+  int32_t elbow;
+  int32_t wristRotate;
+  int32_t wrist;
+};
+
+struct JointAccelerations
+{
+  int32_t base;
+  int32_t shoulder;
+  int32_t elbow;
+  int32_t wristRotate;
+  int32_t wrist;
 };
 
 #endif

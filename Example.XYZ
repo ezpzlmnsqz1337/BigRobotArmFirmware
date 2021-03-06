@@ -2,7 +2,7 @@
 #define MAX_BUF (64) // What is the longest message Arduino can store?
 
 char buffer[MAX_BUF]; // where we store the message until we get a ';'
-int sofar;            // how much is in the buffer
+int32_t sofar;            // how much is in the buffer
 
 /**
  * First thing this machine does on startup. Runs only once.
@@ -76,7 +76,7 @@ void loop()
 void processCommand()
 {
   // look for commands that start with 'G'
-  int cmd = parsenumber('G', -1);
+  int32_t cmd = parsenumber('G', -1);
   switch (cmd)
   {
   case 0: // move in a line
@@ -134,8 +134,8 @@ parsenumber(key, default)
 {
   long dx = newx - px; // distance to move (delta)
   long dy = newy - py;
-  int dirx = dx > 0 ? 1 : -1; // direction to move
-  int diry = dy > 0 ? 1 : -1;
+  int32_t dirx = dx > 0 ? 1 : -1; // direction to move
+  int32_t diry = dy > 0 ? 1 : -1;
   dx = abs(dx); // absolute delta
   dy = abs(dy);
 

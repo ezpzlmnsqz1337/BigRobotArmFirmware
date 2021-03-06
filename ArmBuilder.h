@@ -1,34 +1,29 @@
 #ifndef ARM_BUILDER_H
 #define ARM_BUILDER_H
 
-#include "Base.h"
-#include "Elbow.h"
 #include "Gripper.h"
-#include "Shoulder.h"
-#include "Wrist.h"
-
+#include "RobotArmJoint.h"
 #include "Structures.h"
-
-#include "MultiStepper.h"
 
 class ArmBuilder
 {
 private:
-  Base mBase;
-  Shoulder mShoulder;
-  Elbow mElbow;
-  Wrist mWristRotate;
-  Wrist mWrist;
+  RobotArmJoint mBase;
+  RobotArmJoint mShoulder;
+  RobotArmJoint mElbow;
+  RobotArmJoint mWristRotate;
+  RobotArmJoint mWrist;
   Gripper mGripper;
 
 protected:
   long getNormalizedValue(const long value);
-
-  float mDefaultSpeed = 200 * 16;        // stepps per mm
-  float mDefaultAcceleration = 200 * 16; // stepps per mm
+  float calculateTimeToPosition(const long position, const long target, const float speed);
+  float findMaxInArray(const float* array, const int32_t size);
 
   float mSpeedMultiplier = 1;
   float mAccelerationMultiplier = 1;
+
+  bool mSyncMotors = false;
 
 public:
   ArmBuilder();
@@ -36,21 +31,30 @@ public:
   void init();
 
   void goTo(const JointPositions& jp);
+  void goToSync(const JointPositions& jp);
   void move(const JointPositions& jp);
 
   void setSpeed(const float speed);
   void setAcceleration(const float acceleration);
-  void setZeroPositoin();
+  void setZeroPosition();
+
+  void setSpeeds(const JointSpeeds& jp);
+  void setAccelerations(const JointAccelerations& ja);
+
+  bool isSyncEnabled();
+  void setSyncMotors(const bool sync);
 
   bool reachedPositions(const JointPositions& jp);
 
   JointPositions getPositions();
+  JointAccelerations getAccelerations();
+  JointSpeeds getSpeeds();
 
-  Base& getBase();
-  Shoulder& getShoulder();
-  Elbow& getElbow();
-  Wrist& getWristRotate();
-  Wrist& getWrist();
+  RobotArmJoint& getBase();
+  RobotArmJoint& getShoulder();
+  RobotArmJoint& getElbow();
+  RobotArmJoint& getWristRotate();
+  RobotArmJoint& getWrist();
   Gripper& getGripper();
 };
 

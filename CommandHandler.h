@@ -7,14 +7,23 @@
 
 // This is the content of the .h file, which is where the declarations go
 
-const int BUFFER_SIZE = 50;
+const int32_t BUFFER_SIZE = 50;
 
 class CommandHandler
 {
 private:
   char buffer[BUFFER_SIZE];
-  int sofar;
+  int32_t sofar;
   ArmBuilder mArmBuilder;
+
+  void processGoTo(const char* command);
+  void processHome(const char* command);
+  void processSetZeroPosition(const char* command);
+  void processSpeed(const char* command);
+  void processAccel(const char* command);
+  void processGripper(const char* command);
+  void processSyncMotors(const char* command);
+  void processStatus(const char* command);
 
 public:
   CommandHandler();
@@ -25,8 +34,12 @@ public:
 
   void processCommand();
 
-  void printResponse(const float speed, const float acceleration, const bool valid);
-  void printResponse(const JointPositions& jp, bool valid);
+  void printPositionResponse(const bool valid);
+  void printGripperResponse(const bool valid);
+  void printSpeedResponse(const bool valid);
+  void printAccelerationResponse(const bool valid);
+  void printSyncMotorsResponse(const bool valid);
+  void printInvalidCommandResponse();
 
   void reset();
 };
