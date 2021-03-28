@@ -23,7 +23,8 @@ void CommandHandler::handle()
     {
       // if enter, command is complete
       buffer[sofar] = 0;
-      processCommand();
+      char* command = strtok(buffer, " ");
+      processCommand(command);
       reset();
       return;
     }
@@ -35,10 +36,14 @@ void CommandHandler::handle()
   }
 }
 
-void CommandHandler::processCommand()
+void CommandHandler::processCommand(const char* command)
 {
-  char* command = strtok(buffer, " ");
-
+  if (isSequence && command[0] != 'E')
+  {
+    // if we are now in a sequence, add command to the queue
+    addCommandToSequence();
+    return;
+  }
   if (command[0] == 'G')
   {
     int32_t gNumber = atoi(&command[1]);
@@ -74,12 +79,20 @@ void CommandHandler::processCommand()
     }
     else if (mNumber == 503)
     {
-      processStatus(command);
+      processStatus();
     }
   }
   else if (command[0] == 'S')
   {
     processSyncMotors(command);
+  }
+  else if (strcmp(command, "BEGIN") == 0) // start of sequence of commands
+  {
+    processSequence(command);
+  }
+  else if (strcmp(command, "END") == 0) // end of sequence of commands
+  {
+    executeSequence();
   }
   else
   {
@@ -106,7 +119,6 @@ void CommandHandler::processGoTo(const char* command)
   jp.wrist = wrist != NULL ? atol(&wrist[1]) : jp.wrist;
 
   mArmBuilder.goTo(jp);
-
   printPositionResponse(true);
 }
 
@@ -210,7 +222,45 @@ void CommandHandler::processSyncMotors(const char* command)
   }
 }
 
-void CommandHandler::processStatus(const char* command)
+void CommandHandler::processSequence(const char* command)
+{
+  // set number of repetitions
+  char* repetitions = strtok(NULL, " ");
+  numOfSequenceRepetitions = repetitions != NULL ? atoi(&repetitions[1]) : 1;
+  // set sequence to true to change behavior of process command
+  isSequence = true;
+  // disable Serial responses until sequence is executed
+  enableResponse = false;
+}
+
+void CommandHandler::addCommandToSequence()
+{
+  strcpy(sequence[numOfSequenceCommands], buffer);
+  numOfSequenceCommands++;
+  printSequenceResponse();
+}
+
+void CommandHandler::executeSequence()
+{
+  // for number of repetitions
+  for (int8_t i = 0; i < numOfSequenceRepetitions; i++)
+  {
+    // execute every command in the sequence
+    for (int8_t j = 0; j < numOfSequenceCommands; j++)
+    {
+      processCommand(sequence[j]);
+    }
+  }
+  // reset sequence parametes to default values
+  enableResponse = true;
+  isSequence = false;
+  numOfSequenceCommands = 0;
+  numOfSequenceRepetitions = 1;
+  // send current arm state
+  processStatus();
+}
+
+void CommandHandler::processStatus()
 {
   printPositionResponse(true);
   printGripperResponse(true);
@@ -221,6 +271,10 @@ void CommandHandler::processStatus(const char* command)
 
 void CommandHandler::printGripperResponse(const bool valid)
 {
+  if (enableResponse)
+  {
+    return; // do not send anything when playing sequence
+  }
   if (valid)
   {
     bool enable = mArmBuilder.getGripper().getServo().isEnabled();
@@ -239,6 +293,10 @@ void CommandHandler::printGripperResponse(const bool valid)
 
 void CommandHandler::printSpeedResponse(const bool valid)
 {
+  if (enableResponse)
+  {
+    return; // do not send anything when playing sequence
+  }
   if (valid)
   {
     JointSpeeds js = mArmBuilder.getSpeeds();
@@ -262,6 +320,10 @@ void CommandHandler::printSpeedResponse(const bool valid)
 
 void CommandHandler::printAccelerationResponse(const bool valid)
 {
+  if (enableResponse)
+  {
+    return; // do not send anything when playing sequence
+  }
   if (valid)
   {
     JointAccelerations ja = mArmBuilder.getAccelerations();
@@ -285,6 +347,10 @@ void CommandHandler::printAccelerationResponse(const bool valid)
 
 void CommandHandler::printPositionResponse(const bool valid)
 {
+  if (enableResponse)
+  {
+    return; // do not send anything when playing sequence
+  }
   JointPositions jp = mArmBuilder.getPositions();
   if (valid)
   {
@@ -309,6 +375,10 @@ void CommandHandler::printPositionResponse(const bool valid)
 
 void CommandHandler::printSyncMotorsResponse(const bool valid)
 {
+  if (enableResponse)
+  {
+    return; // do not send anything when playing sequence
+  }
   if (valid)
   {
     Serial.print("BigRobotArm::SYNC-MOTORS: ");
@@ -318,6 +388,11 @@ void CommandHandler::printSyncMotorsResponse(const bool valid)
   {
     printInvalidCommandResponse();
   }
+}
+
+void CommandHandler::printSequenceResponse()
+{
+  Serial.println("BigRobotArm::READY");
 }
 
 void CommandHandler::printInvalidCommandResponse()
