@@ -23,6 +23,9 @@ void CommandHandler::handle()
     {
       // if enter, command is complete
       buffer[sofar] = 0;
+      strcpy(original, buffer);
+      Serial.print("Handle: ");
+      Serial.println(buffer);
       char* command = strtok(buffer, " ");
       processCommand(command);
       reset();
@@ -38,8 +41,12 @@ void CommandHandler::handle()
 
 void CommandHandler::processCommand(const char* command)
 {
+  Serial.print("Process command: ");
+  Serial.println(command);
+
   if (isSequence && command[0] != 'E')
   {
+    Serial.println("is sequence");
     // if we are now in a sequence, add command to the queue
     addCommandToSequence();
     return;
@@ -99,7 +106,10 @@ void CommandHandler::processCommand(const char* command)
     // if unknown command
     printInvalidCommandResponse();
   }
-  Serial.println("BigRobotArm::READY");
+  if (enableResponse)
+  {
+    printReadyResponse();
+  }
 }
 
 void CommandHandler::processGoTo(const char* command)
@@ -231,29 +241,34 @@ void CommandHandler::processSequence(const char* command)
   isSequence = true;
   // disable Serial responses until sequence is executed
   enableResponse = false;
+  printReadyResponse();
 }
 
 void CommandHandler::addCommandToSequence()
 {
-  strcpy(sequence[numOfSequenceCommands], buffer);
+  strcpy(sequence[numOfSequenceCommands], original);
   numOfSequenceCommands++;
-  printSequenceResponse();
+  printReadyResponse();
 }
 
 void CommandHandler::executeSequence()
 {
+  reset();
+  // no longer a sequence
+  isSequence = false;
   // for number of repetitions
   for (int8_t i = 0; i < numOfSequenceRepetitions; i++)
   {
     // execute every command in the sequence
     for (int8_t j = 0; j < numOfSequenceCommands; j++)
     {
-      processCommand(sequence[j]);
+      strcpy(buffer, sequence[j]);
+      char* command = strtok(buffer, " ");
+      processCommand(command);
     }
   }
   // reset sequence parametes to default values
   enableResponse = true;
-  isSequence = false;
   numOfSequenceCommands = 0;
   numOfSequenceRepetitions = 1;
   // send current arm state
@@ -271,7 +286,7 @@ void CommandHandler::processStatus()
 
 void CommandHandler::printGripperResponse(const bool valid)
 {
-  if (enableResponse)
+  if (!enableResponse)
   {
     return; // do not send anything when playing sequence
   }
@@ -293,7 +308,7 @@ void CommandHandler::printGripperResponse(const bool valid)
 
 void CommandHandler::printSpeedResponse(const bool valid)
 {
-  if (enableResponse)
+  if (!enableResponse)
   {
     return; // do not send anything when playing sequence
   }
@@ -320,7 +335,7 @@ void CommandHandler::printSpeedResponse(const bool valid)
 
 void CommandHandler::printAccelerationResponse(const bool valid)
 {
-  if (enableResponse)
+  if (!enableResponse)
   {
     return; // do not send anything when playing sequence
   }
@@ -347,7 +362,7 @@ void CommandHandler::printAccelerationResponse(const bool valid)
 
 void CommandHandler::printPositionResponse(const bool valid)
 {
-  if (enableResponse)
+  if (!enableResponse)
   {
     return; // do not send anything when playing sequence
   }
@@ -375,7 +390,7 @@ void CommandHandler::printPositionResponse(const bool valid)
 
 void CommandHandler::printSyncMotorsResponse(const bool valid)
 {
-  if (enableResponse)
+  if (!enableResponse)
   {
     return; // do not send anything when playing sequence
   }
@@ -390,7 +405,7 @@ void CommandHandler::printSyncMotorsResponse(const bool valid)
   }
 }
 
-void CommandHandler::printSequenceResponse()
+void CommandHandler::printReadyResponse()
 {
   Serial.println("BigRobotArm::READY");
 }

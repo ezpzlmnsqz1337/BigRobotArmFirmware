@@ -21,6 +21,7 @@ private:
   char sequence[MAX_SEQUENCE_COMMANDS][BUFFER_SIZE];
   int8_t numOfSequenceCommands = 0;
   int8_t numOfSequenceRepetitions = 1;
+  char original[BUFFER_SIZE]; // used to store original before strtok inserts delimiters
   bool isSequence = false;
   bool enableResponse = true;
 
@@ -52,7 +53,7 @@ public:
   void printSpeedResponse(const bool valid);
   void printAccelerationResponse(const bool valid);
   void printSyncMotorsResponse(const bool valid);
-  void printSequenceResponse();
+  void printReadyResponse();
   void printInvalidCommandResponse();
 
   void reset();
