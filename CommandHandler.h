@@ -4,12 +4,12 @@
 
 #include "AbstractCommand.h"
 #include "ArmBuilder.h"
+#include "CompositeCommand.h"
 #include "Structures.h"
 
 // This is the content of the .h file, which is where the declarations go
 
 const int8_t BUFFER_SIZE = 50;
-const int8_t MAX_SEQUENCE_COMMANDS = 20;
 
 class CommandHandler
 {
@@ -22,15 +22,7 @@ private:
   int8_t sofar;
 
   // sequence handling
-  AbstractCommand* mSequence[MAX_SEQUENCE_COMMANDS];
-  int8_t numOfSequenceCommands = 0;
-  int8_t numOfSequenceRepetitions = 1;
-  bool isSequence = false;
-  bool enableResponse = true;
-
-  void processSequence();
-  void addCommandToSequence(AbstractCommand* pCommand);
-  void executeSequence();
+  CompositeCommand* mSequence;
 
 public:
   CommandHandler();

@@ -9,10 +9,6 @@ HomeCommand::~HomeCommand()
 {
 }
 
-void HomeCommand::parse(char* cCommand)
-{
-}
-
 void HomeCommand::execute()
 {
   JointPositions jp{0, 0, 0, 0, 0, 40};

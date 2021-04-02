@@ -14,7 +14,6 @@ class ResetPositionCommand : public AbstractCommand
 public:
   explicit ResetPositionCommand(ArmBuilder* armBuilder);
   virtual ~ResetPositionCommand();
-  void parse(char* cCommand) override;
   void execute() override;
   void printResponse() override;
 };

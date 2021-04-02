@@ -12,15 +12,8 @@
 #include "StatusCommand.h"
 #include "SyncMotorsCommand.h"
 
-CommandHandler::CommandHandler() : buffer(""), original("")
+CommandHandler::CommandHandler() : buffer(""), original(""), mSequence(nullptr)
 {
-  for (int i = 0; i < MAX_SEQUENCE_COMMANDS; i++)
-  {
-    for (int j = 0; j < BUFFER_SIZE; j++)
-    {
-      mSequence[i] = nullptr;
-    }
-  }
   sofar = 0;
 }
 
@@ -106,32 +99,35 @@ void CommandHandler::processCommand(char* command)
   }
   else if (strcmp(command, "BEGIN") == 0) // start of sequence of commands
   {
-    processSequence();
+    mSequence = new CompositeCommand(&mArmBuilder);
+    mSequence->parse(original);
     valid = true;
   }
   else if (strcmp(command, "END") == 0) // end of sequence of commands
   {
-    executeSequence();
+    mSequence->execute();
+    mSequence->printResponse();
+    delete mSequence;
+    mSequence = nullptr;
     valid = true;
   }
 
   // if we have some command
   if (pCommand != nullptr)
   {
+    // init command by parsing the string data
     pCommand->parse(original);
-    // if inside a sequence, add command to the queue
-    if (isSequence)
+    // if we have sequence
+    if (mSequence != nullptr)
     {
       // if we are now in a sequence, add command to the queue
-      addCommandToSequence(pCommand);
+      mSequence->addCommandToSequence(pCommand);
     }
-    else // if not in a sequence, run single command
+    else
     {
+      // if single command, execute it
       pCommand->execute();
-      if (enableResponse)
-      {
-        pCommand->printResponse();
-      }
+      pCommand->printResponse();
       delete pCommand;
     }
     valid = true;
@@ -142,51 +138,6 @@ void CommandHandler::processCommand(char* command)
     printInvalidCommandResponse();
   }
   printReadyResponse();
-}
-
-void CommandHandler::processSequence()
-{
-  // set number of repetitions
-  char* repetitions = strtok(NULL, " ");
-  numOfSequenceRepetitions = repetitions != NULL ? atoi(&repetitions[1]) : 1;
-  // set sequence to true to change behavior of process command
-  isSequence = true;
-  // disable Serial responses until sequence is executed
-  enableResponse = false;
-}
-
-void CommandHandler::addCommandToSequence(AbstractCommand* pCommand)
-{
-  mSequence[numOfSequenceCommands] = pCommand;
-  numOfSequenceCommands++;
-}
-
-void CommandHandler::executeSequence()
-{
-  // no longer a sequence
-  isSequence = false;
-  // for number of repetitions
-  for (int8_t i = 0; i < numOfSequenceRepetitions; i++)
-  {
-    // execute every command in the sequence
-    for (int8_t j = 0; j < numOfSequenceCommands; j++)
-    {
-      mSequence[j]->execute();
-    }
-  }
-  // delete objects afterwards
-  for (int8_t j = 0; j < numOfSequenceCommands; j++)
-  {
-    delete mSequence[j];
-  }
-  // reset sequence parametes to default values
-  enableResponse = true;
-  numOfSequenceCommands = 0;
-  numOfSequenceRepetitions = 1;
-  // send current arm state
-  AbstractCommand* status = new StatusCommand(&mArmBuilder);
-  status->printResponse();
-  delete status;
 }
 
 void CommandHandler::printReadyResponse()

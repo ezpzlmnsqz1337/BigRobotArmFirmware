@@ -14,7 +14,6 @@ class HomeCommand : public AbstractCommand
 public:
   explicit HomeCommand(ArmBuilder* armBuilder);
   virtual ~HomeCommand();
-  void parse(char* cCommand) override;
   void execute() override;
   void printResponse() override;
 };

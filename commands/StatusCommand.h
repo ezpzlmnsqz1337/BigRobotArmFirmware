@@ -26,7 +26,6 @@ public:
   explicit StatusCommand(ArmBuilder* armBuilder);
   StatusCommand(const StatusCommand& sc);
   ~StatusCommand();
-  void parse(char* cCommand) override;
   void execute() override;
   void printResponse() override;
 };

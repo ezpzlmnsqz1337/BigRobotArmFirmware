@@ -16,7 +16,7 @@ public:
   explicit AbstractCommand(ArmBuilder* armBuilder);
   virtual ~AbstractCommand();
 
-  virtual void parse(char* cCommand) = 0;
+  virtual void parse(char* cCommand);
   virtual void execute() = 0;
   virtual void printResponse() = 0;
 };

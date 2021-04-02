@@ -25,10 +25,6 @@ StatusCommand::~StatusCommand()
   delete mSyncMotorsCommand;
 }
 
-void StatusCommand::parse(char* cCommand)
-{
-}
-
 void StatusCommand::execute()
 {
 }

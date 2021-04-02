@@ -9,10 +9,6 @@ ResetPositionCommand::~ResetPositionCommand()
 {
 }
 
-void ResetPositionCommand::parse(char* cCommand)
-{
-}
-
 void ResetPositionCommand::execute()
 {
   mArmBuilder->setZeroPosition();

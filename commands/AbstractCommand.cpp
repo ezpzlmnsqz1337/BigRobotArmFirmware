@@ -8,3 +8,7 @@ AbstractCommand::AbstractCommand(ArmBuilder* armBuilder) : mArmBuilder(armBuilde
 AbstractCommand::~AbstractCommand()
 {
 }
+
+void AbstractCommand::parse(char* cCommand)
+{
+}
