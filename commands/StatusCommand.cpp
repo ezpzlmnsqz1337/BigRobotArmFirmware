@@ -1,7 +1,7 @@
 #include "StatusCommand.h"
 #include "Arduino.h"
 
-StatusCommand::StatusCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder)
+StatusCommand::StatusCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder)
 {
   mPositionCommand = new PositionCommand(armBuilder);
   mAccelerationCommand = new AccelerationCommand(armBuilder);
@@ -19,7 +19,6 @@ StatusCommand::StatusCommand(const StatusCommand& sc) : AbstractCommand(sc.mArmB
 
 StatusCommand::~StatusCommand()
 {
-  Serial.println("Deleting status command");
   delete mPositionCommand;
   delete mAccelerationCommand;
   delete mSpeedCommand;

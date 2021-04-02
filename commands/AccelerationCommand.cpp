@@ -1,13 +1,12 @@
 #include "AccelerationCommand.h"
 #include "Arduino.h"
 
-AccelerationCommand::AccelerationCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder)
+AccelerationCommand::AccelerationCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder)
 {
 }
 
 AccelerationCommand::~AccelerationCommand()
 {
-  Serial.println("Deleting acceleration");
 }
 
 void AccelerationCommand::parse(char* cCommand)
@@ -20,7 +19,7 @@ void AccelerationCommand::parse(char* cCommand)
   char* wristRotate = strtok(NULL, " ");
   char* wrist = strtok(NULL, " ");
 
-  mJA = mArmBuilder.getAccelerations();
+  mJA = mArmBuilder->getAccelerations();
   mJA.base = base != NULL ? atoi(&base[1]) : mJA.base;
   mJA.shoulder = shoulder != NULL ? atoi(&shoulder[1]) : mJA.shoulder;
   mJA.elbow = elbow != NULL ? atoi(&elbow[1]) : mJA.elbow;
@@ -30,12 +29,12 @@ void AccelerationCommand::parse(char* cCommand)
 
 void AccelerationCommand::execute()
 {
-  mArmBuilder.setAccelerations(mJA);
+  mArmBuilder->setAccelerations(mJA);
 }
 
 void AccelerationCommand::printResponse()
 {
-  JointAccelerations ja = mArmBuilder.getAccelerations();
+  JointAccelerations ja = mArmBuilder->getAccelerations();
   Serial.print("BigRobotArm::ACCELERATION: ");
   Serial.print("B");
   Serial.print(ja.base);

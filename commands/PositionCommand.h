@@ -13,7 +13,7 @@ class PositionCommand : public AbstractCommand
   JointPositions mJP;
 
 public:
-  explicit PositionCommand(const ArmBuilder& armBuilder);
+  explicit PositionCommand(ArmBuilder* armBuilder);
   virtual ~PositionCommand();
   void parse(char* cCommand) override;
   void execute() override;

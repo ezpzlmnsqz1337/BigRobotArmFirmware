@@ -13,7 +13,7 @@ class GripperCommand : public AbstractCommand
   int32_t mPosition;
 
 public:
-  explicit GripperCommand(const ArmBuilder& armBuilder);
+  explicit GripperCommand(ArmBuilder* armBuilder);
   virtual ~GripperCommand();
   void parse(char* cCommand) override;
   void execute() override;

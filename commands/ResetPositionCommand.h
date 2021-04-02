@@ -12,7 +12,7 @@ class ResetPositionCommand : public AbstractCommand
 {
 
 public:
-  explicit ResetPositionCommand(const ArmBuilder& armBuilder);
+  explicit ResetPositionCommand(ArmBuilder* armBuilder);
   virtual ~ResetPositionCommand();
   void parse(char* cCommand) override;
   void execute() override;

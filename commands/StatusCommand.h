@@ -23,7 +23,7 @@ class StatusCommand : public AbstractCommand
   SyncMotorsCommand* mSyncMotorsCommand;
 
 public:
-  explicit StatusCommand(const ArmBuilder& armBuilder);
+  explicit StatusCommand(ArmBuilder* armBuilder);
   StatusCommand(const StatusCommand& sc);
   ~StatusCommand();
   void parse(char* cCommand) override;

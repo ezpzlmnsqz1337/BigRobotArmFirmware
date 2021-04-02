@@ -1,13 +1,12 @@
 #include "PositionCommand.h"
 #include "Arduino.h"
 
-PositionCommand::PositionCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder)
+PositionCommand::PositionCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder)
 {
 }
 
 PositionCommand::~PositionCommand()
 {
-  Serial.println("Deleting position");
 }
 
 void PositionCommand::parse(char* cCommand)
@@ -19,7 +18,7 @@ void PositionCommand::parse(char* cCommand)
   char* wristRotate = strtok(NULL, " ");
   char* wrist = strtok(NULL, " ");
 
-  mJP = mArmBuilder.getPositions();
+  mJP = mArmBuilder->getPositions();
   mJP.base = base != NULL ? atol(&base[1]) : mJP.base;
   mJP.shoulder = shoulder != NULL ? atol(&shoulder[1]) : mJP.shoulder;
   mJP.elbow = elbow != NULL ? atol(&elbow[1]) : mJP.elbow;
@@ -29,12 +28,12 @@ void PositionCommand::parse(char* cCommand)
 
 void PositionCommand::execute()
 {
-  mArmBuilder.goTo(mJP);
+  mArmBuilder->goTo(mJP);
 }
 
 void PositionCommand::printResponse()
 {
-  JointPositions jp = mArmBuilder.getPositions();
+  JointPositions jp = mArmBuilder->getPositions();
   {
     Serial.println("BigRobotArm::MOVING-TO");
     Serial.print("BigRobotArm::POSITION: ");

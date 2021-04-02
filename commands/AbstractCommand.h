@@ -9,11 +9,11 @@
 class AbstractCommand
 {
 protected:
-  ArmBuilder mArmBuilder;
+  ArmBuilder* mArmBuilder;
   bool isValid = true;
 
 public:
-  explicit AbstractCommand(const ArmBuilder& armBuilder);
+  explicit AbstractCommand(ArmBuilder* armBuilder);
   virtual ~AbstractCommand();
 
   virtual void parse(char* cCommand) = 0;

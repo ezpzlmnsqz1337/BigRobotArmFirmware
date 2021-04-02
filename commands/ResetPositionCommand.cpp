@@ -1,13 +1,12 @@
 #include "ResetPositionCommand.h"
 #include "Arduino.h"
 
-ResetPositionCommand::ResetPositionCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder)
+ResetPositionCommand::ResetPositionCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder)
 {
 }
 
 ResetPositionCommand::~ResetPositionCommand()
 {
-  Serial.println("Deleting reset position");
 }
 
 void ResetPositionCommand::parse(char* cCommand)
@@ -16,12 +15,12 @@ void ResetPositionCommand::parse(char* cCommand)
 
 void ResetPositionCommand::execute()
 {
-  mArmBuilder.setZeroPosition();
+  mArmBuilder->setZeroPosition();
 }
 
 void ResetPositionCommand::printResponse()
 {
-  JointPositions jp = mArmBuilder.getPositions();
+  JointPositions jp = mArmBuilder->getPositions();
   {
     Serial.print("BigRobotArm::POSITION: ");
     Serial.print("B");

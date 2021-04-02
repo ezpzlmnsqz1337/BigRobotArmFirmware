@@ -13,7 +13,7 @@ class SyncMotorsCommand : public AbstractCommand
   int32_t mSyncMotors;
 
 public:
-  explicit SyncMotorsCommand(const ArmBuilder& armBuilder);
+  explicit SyncMotorsCommand(ArmBuilder* armBuilder);
   virtual ~SyncMotorsCommand();
   void parse(char* cCommand) override;
   void execute() override;

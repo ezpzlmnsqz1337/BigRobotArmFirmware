@@ -13,7 +13,7 @@ class AccelerationCommand : public AbstractCommand
   JointAccelerations mJA;
 
 public:
-  explicit AccelerationCommand(const ArmBuilder& armBuilder);
+  explicit AccelerationCommand(ArmBuilder* armBuilder);
   virtual ~AccelerationCommand();
   void parse(char* cCommand) override;
   void execute() override;

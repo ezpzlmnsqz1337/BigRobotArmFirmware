@@ -1,13 +1,12 @@
 #include "SpeedCommand.h"
 #include "Arduino.h"
 
-SpeedCommand::SpeedCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder)
+SpeedCommand::SpeedCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder)
 {
 }
 
 SpeedCommand::~SpeedCommand()
 {
-  Serial.println("Deleting speed command");
 }
 
 void SpeedCommand::parse(char* cCommand)
@@ -20,7 +19,7 @@ void SpeedCommand::parse(char* cCommand)
   char* wristRotate = strtok(NULL, " ");
   char* wrist = strtok(NULL, " ");
 
-  mJS = mArmBuilder.getSpeeds();
+  mJS = mArmBuilder->getSpeeds();
   mJS.base = base != NULL ? atoi(&base[1]) : mJS.base;
   mJS.shoulder = shoulder != NULL ? atoi(&shoulder[1]) : mJS.shoulder;
   mJS.elbow = elbow != NULL ? atoi(&elbow[1]) : mJS.elbow;
@@ -30,12 +29,12 @@ void SpeedCommand::parse(char* cCommand)
 
 void SpeedCommand::execute()
 {
-  mArmBuilder.setSpeeds(mJS);
+  mArmBuilder->setSpeeds(mJS);
 }
 
 void SpeedCommand::printResponse()
 {
-  JointSpeeds ja = mArmBuilder.getSpeeds();
+  JointSpeeds ja = mArmBuilder->getSpeeds();
   Serial.print("BigRobotArm::SPEED: ");
   Serial.print("B");
   Serial.print(ja.base);

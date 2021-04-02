@@ -13,7 +13,7 @@ class SpeedCommand : public AbstractCommand
   JointSpeeds mJS;
 
 public:
-  explicit SpeedCommand(const ArmBuilder& armBuilder);
+  explicit SpeedCommand(ArmBuilder* armBuilder);
   virtual ~SpeedCommand();
   void parse(char* cCommand) override;
   void execute() override;

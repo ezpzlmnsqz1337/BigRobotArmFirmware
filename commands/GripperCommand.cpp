@@ -1,13 +1,12 @@
 #include "GripperCommand.h"
 #include "Arduino.h"
 
-GripperCommand::GripperCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder), mEnabled(0), mPosition(0)
+GripperCommand::GripperCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder), mEnabled(0), mPosition(0)
 {
 }
 
 GripperCommand::~GripperCommand()
 {
-  Serial.println("Deleting gripper");
 }
 
 void GripperCommand::parse(char* cCommand)
@@ -24,21 +23,21 @@ void GripperCommand::execute()
 {
   if (mEnabled == 1)
   {
-    mArmBuilder.getGripper().init();
-    JointPositions jp = mArmBuilder.getPositions();
+    mArmBuilder->getGripper().init();
+    JointPositions jp = mArmBuilder->getPositions();
     jp.gripper = mPosition;
-    mArmBuilder.goTo(jp);
+    mArmBuilder->goTo(jp);
   }
   else if (mEnabled == 0)
   {
-    mArmBuilder.getGripper().getServo().deinit();
+    mArmBuilder->getGripper().getServo().deinit();
   }
 }
 
 void GripperCommand::printResponse()
 {
-  bool enable = mArmBuilder.getGripper().getServo().isEnabled();
-  int32_t position = mArmBuilder.getPositions().gripper;
+  bool enable = mArmBuilder->getGripper().getServo().isEnabled();
+  int32_t position = mArmBuilder->getPositions().gripper;
   Serial.print("BigRobotArm::GRIPPER: ");
   Serial.print("E");
   Serial.print(enable ? 1 : 0);

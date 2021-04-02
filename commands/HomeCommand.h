@@ -12,7 +12,7 @@ class HomeCommand : public AbstractCommand
 {
 
 public:
-  explicit HomeCommand(const ArmBuilder& armBuilder);
+  explicit HomeCommand(ArmBuilder* armBuilder);
   virtual ~HomeCommand();
   void parse(char* cCommand) override;
   void execute() override;

@@ -1,13 +1,12 @@
 #include "HomeCommand.h"
 #include "Arduino.h"
 
-HomeCommand::HomeCommand(const ArmBuilder& armBuilder) : AbstractCommand(armBuilder)
+HomeCommand::HomeCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder)
 {
 }
 
 HomeCommand::~HomeCommand()
 {
-  Serial.println("Deleting home");
 }
 
 void HomeCommand::parse(char* cCommand)
@@ -16,16 +15,13 @@ void HomeCommand::parse(char* cCommand)
 
 void HomeCommand::execute()
 {
-  Serial.println("EX1");
   JointPositions jp{0, 0, 0, 0, 0, 40};
-  Serial.println("EX2");
-  mArmBuilder.goTo(jp);
-  Serial.println("EX3");
+  mArmBuilder->goTo(jp);
 }
 
 void HomeCommand::printResponse()
 {
-  JointPositions jp = mArmBuilder.getPositions();
+  JointPositions jp = mArmBuilder->getPositions();
   {
     Serial.println("BigRobotArm::MOVING-TO");
     Serial.print("BigRobotArm::POSITION: ");
