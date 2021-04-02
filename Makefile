@@ -19,5 +19,11 @@
 #       --vid-pid string               When specified, VID/PID specific build properties are used, if board supports them.
 #       --warnings string              Optional, can be "none", "default", "more" and "all". Defaults to "none". Used to tell gcc which warning level to use (-W flag). (default "none")
 
-arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB0 -t
+all:
+	mkdir BigRobotArm
+	cp *.ino BigRobotArm
+	cp *.h **/*.h **/*.cpp *.cpp BigRobotArm
+	cd BigRobotArm;	arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB0 -t	
 
+clean:
+	rm -rf BigRobotArm
