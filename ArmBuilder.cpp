@@ -164,18 +164,22 @@ void ArmBuilder::setSyncMotors(const bool sync)
 JointSpeeds ArmBuilder::getSpeeds()
 {
   return {
-      mBase.getMaxSpeedMultiplier() * 100,  mShoulder.getMaxSpeedMultiplier() * 100,
-      mElbow.getMaxSpeedMultiplier() * 100, mWristRotate.getMaxSpeedMultiplier() * 100,
-      mWrist.getMaxSpeedMultiplier() * 100,
+      static_cast<int32_t>(mBase.getMaxSpeedMultiplier() * 100),
+      static_cast<int32_t>(mShoulder.getMaxSpeedMultiplier() * 100),
+      static_cast<int32_t>(mElbow.getMaxSpeedMultiplier() * 100),
+      static_cast<int32_t>(mWristRotate.getMaxSpeedMultiplier() * 100),
+      static_cast<int32_t>(mWrist.getMaxSpeedMultiplier() * 100),
   };
 }
 
 JointAccelerations ArmBuilder::getAccelerations()
 {
   return {
-      mBase.getAccelerationMultiplier() * 100,  mShoulder.getAccelerationMultiplier() * 100,
-      mElbow.getAccelerationMultiplier() * 100, mWristRotate.getAccelerationMultiplier() * 100,
-      mWrist.getAccelerationMultiplier() * 100,
+      static_cast<int32_t>(mBase.getAccelerationMultiplier() * 100),
+      static_cast<int32_t>(mShoulder.getAccelerationMultiplier() * 100),
+      static_cast<int32_t>(mElbow.getAccelerationMultiplier() * 100),
+      static_cast<int32_t>(mWristRotate.getAccelerationMultiplier() * 100),
+      static_cast<int32_t>(mWrist.getAccelerationMultiplier() * 100),
   };
 }
 

@@ -35,6 +35,20 @@ Firmware for BigRobotArm from instructables (https://www.instructables.com/Build
 ## Status
 - `M503` returns all information about current arm position and settings
 
+## Composite command (sequences)
+# Begin
+- `BEGIN Ix` after this command any command sent will be added to buffer to be executed when #End command is received. *x* is number of repetitions of the sequence.
+
+# End
+- `END` starts execution of commands in buffer for number of iterations set after the #Begin command.
+
+# Example
+- `BEGIN I5` start of sequence, number of interations is 5
+- `G0 B100 S200 E300 WR400 W300` move the arm to B100 S200 E300 WR400 W300
+- `G0 B0 S50 E5000 WR1500 W0` move the arm to B0 S50 E5000 WR1500 W0
+- `END` executes the sequence (the two commands above) 5 times
+
+
 Response:
 - BigRobotArm::POSITION: `Ba Sb Ec WRd We` - where *a,b,c,d,e* are current motor step positions
 - BigRobotArm::GRIPPER: `Ex Py`- where *x* specifies if gripper is enabled (1) or disabled (0) and *y* specifies servo position
