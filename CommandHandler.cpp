@@ -26,7 +26,7 @@ void CommandHandler::init(const ArmBuilder& armBuilder)
 
 void CommandHandler::handle()
 {
-  if (Serial.available() > 0)
+  while (Serial.available() > 0)
   {
     char c = Serial.read();
     if (c == 13)

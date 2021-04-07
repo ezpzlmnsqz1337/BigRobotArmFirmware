@@ -250,9 +250,9 @@ long ArmBuilder::getNormalizedValue(const long value)
 
 JointPositions ArmBuilder::getPositions()
 {
-  return {mBase.getMotor().currentPosition(),  mShoulder.getMotor().currentPosition(),
-          mElbow.getMotor().currentPosition(), mWristRotate.getMotor().currentPosition(),
-          mWrist.getMotor().currentPosition(), mGripper.getServo().getPosition()};
+  return {mBase.getMotor().targetPosition(),  mShoulder.getMotor().targetPosition(),
+          mElbow.getMotor().targetPosition(), mWristRotate.getMotor().targetPosition(),
+          mWrist.getMotor().targetPosition(), mGripper.getServo().getPosition()};
 }
 
 RobotArmJoint& ArmBuilder::getBase()
