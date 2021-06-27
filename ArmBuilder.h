@@ -2,6 +2,7 @@
 #define ARM_BUILDER_H
 
 #include "Gripper.h"
+#include "MultiStepper.h"
 #include "RobotArmJoint.h"
 #include "Structures.h"
 
@@ -14,6 +15,7 @@ private:
   RobotArmJoint mWristRotate;
   RobotArmJoint mWrist;
   Gripper mGripper;
+  MultiStepper mMultiStepper;
 
 protected:
   long getNormalizedValue(const long value);
@@ -31,6 +33,7 @@ public:
   void init();
 
   void goTo(const JointPositions& jp);
+  void goToSyncMultiStepper(const JointPositions& jp);
   void goToSync(const JointPositions& jp);
   void move(const JointPositions& jp);
 
