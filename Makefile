@@ -23,7 +23,7 @@ all:
 	mkdir BigRobotArm
 	cp *.ino BigRobotArm
 	cp *.h **/*.h **/*.cpp *.cpp BigRobotArm
-	cd BigRobotArm;	arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB0 -t	
+	cd BigRobotArm;	arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB1 -t	
 
 clean:
 	rm -rf BigRobotArm

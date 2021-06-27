@@ -21,6 +21,13 @@ void ArmBuilder::init()
 
   mWrist.init(M5_STEP, M5_DIR, M5_ENABLE, Config::M5_STEPS_PER_REVOLUTION, MICRO_16);
 
+  // init multistepper
+  mMultiStepper.addStepper(mBase.getMotor());
+  mMultiStepper.addStepper(mShoulder.getMotor());
+  mMultiStepper.addStepper(mElbow.getMotor());
+  mMultiStepper.addStepper(mWristRotate.getMotor());
+  mMultiStepper.addStepper(mWrist.getMotor());
+
   mGripper.init();
 }
 
@@ -61,6 +68,12 @@ void ArmBuilder::setZeroPosition()
 
 void ArmBuilder::goTo(const JointPositions& jp)
 {
+  if (mSyncMotors)
+  {
+    goToSyncMultiStepper(jp);
+    // goToSync(jp);
+    return;
+  }
   mBase.getMotor().moveTo(jp.base);
   mShoulder.getMotor().moveTo(jp.shoulder);
   mElbow.getMotor().moveTo(jp.elbow);
@@ -77,6 +90,13 @@ void ArmBuilder::goTo(const JointPositions& jp)
     mWrist.getMotor().run();
     mGripper.getServo().loop();
   }
+}
+
+void ArmBuilder::goToSyncMultiStepper(const JointPositions& jp)
+{
+  long position[]{jp.base, jp.shoulder, jp.elbow, jp.wristRotate, jp.wrist};
+  mMultiStepper.moveTo(position);
+  mMultiStepper.runSpeedToPosition();
 }
 
 void ArmBuilder::goToSync(const JointPositions& jp)
