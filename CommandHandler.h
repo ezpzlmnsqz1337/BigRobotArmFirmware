@@ -2,9 +2,7 @@
 #ifndef COMMAND_HANDLER_H
 #define COMMAND_HANDLER_H
 
-#include "AbstractCommand.h"
 #include "ArmBuilder.h"
-#include "CompositeCommand.h"
 #include "Structures.h"
 
 // This is the content of the .h file, which is where the declarations go
@@ -18,11 +16,11 @@ private:
 
   // serial handling
   char buffer[BUFFER_SIZE];
-  char original[BUFFER_SIZE];
   int8_t sofar;
 
-  // sequence handling
-  CompositeCommand* mSequence;
+protected:
+  void handlePositionCommand(uint8_t* command);
+  void handleGripperCommand(uint8_t* command);
 
 public:
   CommandHandler();
@@ -31,7 +29,8 @@ public:
 
   void handle();
 
-  void processCommand(char* command);
+  void printStatus();
+  void processCommand(uint8_t* command);
   void printReadyResponse();
   void printInvalidCommandResponse();
 

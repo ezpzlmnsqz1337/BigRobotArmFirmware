@@ -1,18 +1,11 @@
 #include "CommandHandler.h"
-#include "AbstractCommand.h"
-#include "AccelerationCommand.h"
 #include "Arduino.h"
+#include "Commands.h"
 #include "Config.h"
-#include "GripperCommand.h"
-#include "HomeCommand.h"
+#include "Constants.h"
 #include "MemoryFree.h"
-#include "PositionCommand.h"
-#include "ResetPositionCommand.h"
-#include "SpeedCommand.h"
-#include "StatusCommand.h"
-#include "SyncMotorsCommand.h"
 
-CommandHandler::CommandHandler() : buffer(""), original(""), mSequence(nullptr)
+CommandHandler::CommandHandler() : buffer("")
 {
   sofar = 0;
 }
@@ -32,10 +25,7 @@ void CommandHandler::handle()
     if (c == 13)
     {
       // if enter, command is complete
-      buffer[sofar] = 0;
-      strcpy(original, buffer);
-      char* command = strtok(buffer, " ");
-      processCommand(command);
+      processCommand(reinterpret_cast<uint8_t*>(buffer));
       reset();
       return;
     }
@@ -47,107 +37,124 @@ void CommandHandler::handle()
   }
 }
 
-void CommandHandler::processCommand(char* command)
+void CommandHandler::processCommand(uint8_t* command)
 {
-  AbstractCommand* pCommand = nullptr;
   bool valid = false;
   Serial.print("Free mem: ");
   Serial.println(freeMemory());
   Serial.print("Process command: ");
-  Serial.println(original);
+  Serial.println(reinterpret_cast<char*>(command));
 
-  if (command[0] == 'G')
+  if (command)
   {
-    int32_t gNumber = atoi(&command[1]);
-    switch (gNumber)
+    switch (command[0])
     {
-    case 0:
-      pCommand = new PositionCommand(&mArmBuilder);
+    case CommandId::GOTO_COMMAND_ID:
+      handlePositionCommand(&command[1]);
       break;
-    case 1:
-      pCommand = new GripperCommand(&mArmBuilder);
+    case CommandId::HOME_COMMAND_ID:
+      mArmBuilder.goTo({0, 0, 0, 0, 0});
       break;
-    case 28:
-      pCommand = new HomeCommand(&mArmBuilder);
+    case CommandId::RESET_POSITION_COMMAND_ID:
+      mArmBuilder.setZeroPosition();
       break;
-    case 92:
-      pCommand = new ResetPositionCommand(&mArmBuilder);
+    case CommandId::SPEED_COMMAND_ID:
+      mArmBuilder.setSpeeds(reinterpret_cast<const SpeedCommand*>(&command[1])->speeds);
       break;
+    case CommandId::ACCEL_COMMAND_ID:
+      mArmBuilder.setAccelerations(reinterpret_cast<const AccelerationCommand*>(&command[1])->values);
+      break;
+    case CommandId::GRIPPER_COMMAND_ID:
+      handleGripperCommand(&command[1]);
+      break;
+    case CommandId::SYNC_MOTORS_COMMAND_ID:
+      mArmBuilder.setSyncMotors(reinterpret_cast<const SyncMotorsCommand*>(&command[1])->syncMotors);
+      break;
+    case CommandId::STATUS_COMMAND_ID:
+      printStatus();
+      break;
+    // case CommandId::BEGIN_COMMAND_ID:
+    //   mArmBuilder.goTo(reinterpret_cast<BEGIN_COMMAND_ID*>(command[1])->positions);
+    //   break;
+    // case CommandId::END_COMMAND_ID:
+    //   mArmBuilder.goTo(reinterpret_cast<PositionCommand*>(command[1])->positions);
+    //   break;
     default:
-      valid = false;
+      // if unknown command
+      printInvalidCommandResponse();
     }
-  }
-  else if (command[0] == 'M')
-  {
-    int32_t mNumber = atoi(&command[1]);
-    if (mNumber == 201)
-    {
-      pCommand = new AccelerationCommand(&mArmBuilder);
-    }
-    else if (mNumber == 203)
-    {
-      pCommand = new SpeedCommand(&mArmBuilder);
-    }
-    else if (mNumber == 503)
-    {
-      pCommand = new StatusCommand(&mArmBuilder);
-    }
-  }
-  else if (command[0] == 'S')
-  {
-    pCommand = new SyncMotorsCommand(&mArmBuilder);
-  }
-  else if (strcmp(command, "BEGIN") == 0) // start of sequence of commands
-  {
-    mSequence = new CompositeCommand(&mArmBuilder);
-    mSequence->parse(original);
-    valid = true;
-  }
-  else if (strcmp(command, "END") == 0) // end of sequence of commands
-  {
-    mSequence->execute();
-    mSequence->printResponse();
-    delete mSequence;
-    mSequence = nullptr;
-    valid = true;
-  }
-
-  // if we have some command
-  if (pCommand != nullptr)
-  {
-    // init command by parsing the string data
-    pCommand->parse(original);
-    // if we have sequence
-    if (mSequence != nullptr)
-    {
-      // if we are now in a sequence, add command to the queue
-      mSequence->addCommandToSequence(pCommand);
-    }
-    else
-    {
-      // if single command, execute it
-      pCommand->execute();
-      pCommand->printResponse();
-      delete pCommand;
-    }
-    valid = true;
-  }
-  if (!valid)
-  {
-    // if unknown command
-    printInvalidCommandResponse();
   }
   printReadyResponse();
 }
 
+void CommandHandler::handlePositionCommand(uint8_t* command)
+{
+  JointPositions original = mArmBuilder.getPositions();
+
+  JointPositions target = reinterpret_cast<const PositionCommand*>(command)->positions;
+  target.gripper = original.gripper;
+  mArmBuilder.goTo(target);
+}
+
+void CommandHandler::handleGripperCommand(uint8_t* command)
+{
+  const GripperCommand* c = reinterpret_cast<const GripperCommand*>(command);
+  if (c->enabled)
+  {
+    mArmBuilder.getGripper().getServo().init();
+  }
+  else
+  {
+    mArmBuilder.getGripper().getServo().deinit();
+  }
+  JointPositions jp = mArmBuilder.getPositions();
+  jp.gripper = c->position;
+  mArmBuilder.goTo(jp);
+}
+
+void CommandHandler::printStatus()
+{
+  Serial.println(BigRobotArmStatus::STATUS);
+  // positions
+  JointPositions jp = mArmBuilder.getPositions();
+  Serial.print(jp.base);
+  Serial.print(jp.shoulder);
+  Serial.print(jp.elbow);
+  Serial.print(jp.wristRotate);
+  Serial.print(jp.wrist);
+  // accelerations
+  JointAccelerations ja = mArmBuilder.getAccelerations();
+  Serial.print(ja.base);
+  Serial.print(ja.shoulder);
+  Serial.print(ja.elbow);
+  Serial.print(ja.wristRotate);
+  Serial.print(ja.wrist);
+  // speeds
+  JointSpeeds js = mArmBuilder.getSpeeds();
+  Serial.print(js.base);
+  Serial.print(js.shoulder);
+  Serial.print(js.elbow);
+  Serial.print(js.wristRotate);
+  Serial.print(js.wrist);
+  // gripper
+  Gripper g = mArmBuilder.getGripper();
+  uint8_t gripperEnabled = g.getServo().isEnabled() ? 1 : 0;
+  uint8_t gripperPosition = static_cast<uint8_t>(g.getServo().getPosition());
+  Serial.print(gripperEnabled);
+  Serial.print(gripperPosition);
+  // sync motors
+  uint8_t syncEnabled = mArmBuilder.isSyncEnabled() ? 1 : 0;
+  Serial.print(syncEnabled);
+}
+
 void CommandHandler::printReadyResponse()
 {
-  Serial.println("BigRobotArm::READY");
+  Serial.println(BigRobotArmStatus::READY);
 }
 
 void CommandHandler::printInvalidCommandResponse()
 {
-  Serial.println("BigRobotArm::INVALID-COMMAND");
+  Serial.println(BigRobotArmStatus::INVALID_COMMAND);
 }
 
 void CommandHandler::reset()

@@ -11,11 +11,11 @@ struct Inputs
 
 struct JointPositions
 {
-  long base;
-  long shoulder;
-  long elbow;
-  long wristRotate;
-  long wrist;
+  int32_t base;
+  int32_t shoulder;
+  int32_t elbow;
+  int32_t wristRotate;
+  int32_t wrist;
   int32_t gripper;
 };
 
