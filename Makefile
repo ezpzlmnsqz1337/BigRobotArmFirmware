@@ -20,4 +20,4 @@
 #       --warnings string              Optional, can be "none", "default", "more" and "all". Defaults to "none". Used to tell gcc which warning level to use (-W flag). (default "none")
 
 all:
-	arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB1 -t
+	arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB0 -t

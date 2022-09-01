@@ -29,6 +29,8 @@ public:
 
   void handle();
 
+  void sendInt32(const int32_t cNum);
+
   void printStatus();
   void processCommand(uint8_t* command);
   void printReadyResponse();
