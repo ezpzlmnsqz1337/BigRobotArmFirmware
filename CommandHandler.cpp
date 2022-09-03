@@ -49,26 +49,26 @@ void CommandHandler::processCommand(uint8_t* command)
   {
     switch (command[0])
     {
-    case CommandId::GOTO_COMMAND_ID:
+    case CommandId::POSITION_COMMAND_ID:
       handlePositionCommand(&command[1]);
       break;
     case CommandId::HOME_COMMAND_ID:
-      mArmBuilder.goTo({0, 0, 0, 0, 0});
+      handleHomeCommand();
       break;
     case CommandId::RESET_POSITION_COMMAND_ID:
-      mArmBuilder.setZeroPosition();
+      handleResetPositionsCommand();
       break;
     case CommandId::SPEED_COMMAND_ID:
-      mArmBuilder.setSpeeds(reinterpret_cast<const SpeedCommand*>(&command[1])->speeds);
+      handleSpeedCommand(&command[1]);
       break;
     case CommandId::ACCEL_COMMAND_ID:
-      mArmBuilder.setAccelerations(reinterpret_cast<const AccelerationCommand*>(&command[1])->values);
+      handleAccelerationCommand(&command[1]);
       break;
     case CommandId::GRIPPER_COMMAND_ID:
       handleGripperCommand(&command[1]);
       break;
     case CommandId::SYNC_MOTORS_COMMAND_ID:
-      mArmBuilder.setSyncMotors(reinterpret_cast<const SyncMotorsCommand*>(&command[1])->syncMotors);
+      handleSyncMotorsCommand(&command[1]);
       break;
     case CommandId::STATUS_COMMAND_ID:
       printStatus();
@@ -89,27 +89,106 @@ void CommandHandler::processCommand(uint8_t* command)
 
 void CommandHandler::handlePositionCommand(uint8_t* command)
 {
-  JointPositions original = mArmBuilder.getPositions();
+  Serial.println(CommandId::POSITION_COMMAND_ID);
 
-  JointPositions target = reinterpret_cast<const PositionCommand*>(command)->positions;
-  target.gripper = original.gripper;
+  JointOptions target = reinterpret_cast<const PositionCommand*>(command)->positions;
+
   mArmBuilder.goTo(target);
+
+  JointOptions jp = mArmBuilder.getPositions();
+  sendInt32(jp.base);
+  sendInt32(jp.shoulder);
+  sendInt32(jp.elbow);
+  sendInt32(jp.wristRotate);
+  sendInt32(jp.wrist);
+
+  Serial.println();
+}
+
+void CommandHandler::handleAccelerationCommand(uint8_t* command)
+{
+  Serial.println(CommandId::ACCEL_COMMAND_ID);
+  mArmBuilder.setAccelerations(reinterpret_cast<const AccelerationCommand*>(command)->values);
+
+  JointOptions jp = mArmBuilder.getAccelerations();
+  sendInt32(jp.base);
+  sendInt32(jp.shoulder);
+  sendInt32(jp.elbow);
+  sendInt32(jp.wristRotate);
+  sendInt32(jp.wrist);
+
+  Serial.println();
+}
+
+void CommandHandler::handleSpeedCommand(uint8_t* command)
+{
+  Serial.println(CommandId::SPEED_COMMAND_ID);
+  JointOptions speeds = reinterpret_cast<const SpeedCommand*>(command)->speeds;
+  mArmBuilder.setSpeeds(speeds);
+
+  JointOptions jp = mArmBuilder.getSpeeds();
+
+  sendInt32(jp.base);
+  sendInt32(jp.shoulder);
+  sendInt32(jp.elbow);
+  sendInt32(jp.wristRotate);
+  sendInt32(jp.wrist);
+
+  Serial.println();
 }
 
 void CommandHandler::handleGripperCommand(uint8_t* command)
 {
-  const GripperCommand* c = reinterpret_cast<const GripperCommand*>(command);
-  if (c->enabled)
-  {
-    mArmBuilder.getGripper().getServo().init();
-  }
-  else
-  {
-    mArmBuilder.getGripper().getServo().deinit();
-  }
-  JointPositions jp = mArmBuilder.getPositions();
-  jp.gripper = c->position;
-  mArmBuilder.goTo(jp);
+  Serial.println(CommandId::GRIPPER_COMMAND_ID);
+  const GripperOptions go = reinterpret_cast<const GripperCommand*>(command)->go;
+
+  mArmBuilder.handleGripper(go);
+
+  const GripperOptions result = mArmBuilder.getGripperOptions();
+  Serial.write(result.enabled);
+  Serial.write(result.position);
+
+  Serial.println();
+}
+
+void CommandHandler::handleResetPositionsCommand()
+{
+  Serial.println(CommandId::RESET_POSITION_COMMAND_ID);
+  mArmBuilder.setZeroPosition();
+
+  JointOptions jp = mArmBuilder.getPositions();
+  sendInt32(jp.base);
+  sendInt32(jp.shoulder);
+  sendInt32(jp.elbow);
+  sendInt32(jp.wristRotate);
+  sendInt32(jp.wrist);
+
+  Serial.println();
+}
+
+void CommandHandler::handleHomeCommand()
+{
+  Serial.println(CommandId::HOME_COMMAND_ID);
+  mArmBuilder.goTo({0, 0, 0, 0, 0});
+
+  JointOptions jp = mArmBuilder.getPositions();
+  sendInt32(jp.base);
+  sendInt32(jp.shoulder);
+  sendInt32(jp.elbow);
+  sendInt32(jp.wristRotate);
+  sendInt32(jp.wrist);
+
+  Serial.println();
+}
+
+void CommandHandler::handleSyncMotorsCommand(uint8_t* command)
+{
+  Serial.println(CommandId::SYNC_MOTORS_COMMAND_ID);
+  mArmBuilder.setSyncMotors(reinterpret_cast<const SyncMotorsCommand*>(command)->syncMotors);
+  uint8_t enabled = mArmBuilder.isSyncEnabled() ? 1 : 0;
+  Serial.write(enabled);
+
+  Serial.println();
 }
 
 void CommandHandler::sendInt32(const int32_t cNum)
@@ -125,35 +204,34 @@ void CommandHandler::printStatus()
 
   Serial.println(BigRobotArmStatus::STATUS);
   // positions
-  JointPositions jp = mArmBuilder.getPositions();
+  JointOptions jp = mArmBuilder.getPositions();
   sendInt32(jp.base);
   sendInt32(jp.shoulder);
   sendInt32(jp.elbow);
   sendInt32(jp.wristRotate);
   sendInt32(jp.wrist);
   // accelerations
-  JointAccelerations ja = mArmBuilder.getAccelerations();
+  JointOptions ja = mArmBuilder.getAccelerations();
   sendInt32(ja.base);
   sendInt32(ja.shoulder);
   sendInt32(ja.elbow);
   sendInt32(ja.wristRotate);
   sendInt32(ja.wrist);
   // speeds
-  JointSpeeds js = mArmBuilder.getSpeeds();
+  JointOptions js = mArmBuilder.getSpeeds();
   sendInt32(js.base);
   sendInt32(js.shoulder);
   sendInt32(js.elbow);
   sendInt32(js.wristRotate);
   sendInt32(js.wrist);
   // gripper
-  Gripper g = mArmBuilder.getGripper();
-  uint8_t gripperEnabled = g.getServo().isEnabled() ? 1 : 0;
-  uint8_t gripperPosition = static_cast<uint8_t>(g.getServo().getPosition());
-  Serial.write(gripperEnabled);
-  Serial.write(gripperPosition);
+  GripperOptions go = mArmBuilder.getGripperOptions();
+  Serial.write(go.enabled);
+  Serial.write(go.position);
   // sync motors
   uint8_t syncEnabled = mArmBuilder.isSyncEnabled() ? 1 : 0;
-  sendInt32(syncEnabled);
+  Serial.write(syncEnabled);
+  Serial.println();
 }
 
 void CommandHandler::printReadyResponse()
@@ -163,7 +241,7 @@ void CommandHandler::printReadyResponse()
 
 void CommandHandler::printInvalidCommandResponse()
 {
-  Serial.write(BigRobotArmStatus::INVALID_COMMAND);
+  Serial.println(BigRobotArmStatus::INVALID_COMMAND);
 }
 
 void CommandHandler::reset()

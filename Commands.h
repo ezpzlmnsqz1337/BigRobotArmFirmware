@@ -11,23 +11,22 @@ struct SyncMotorsCommand
 
 struct AccelerationCommand
 {
-  JointAccelerations values;
+  JointOptions values;
 };
 
 struct SpeedCommand
 {
-  JointSpeeds speeds;
+  JointOptions speeds;
 };
 
 struct PositionCommand
 {
-  JointPositions positions;
+  JointOptions positions;
 };
 
 struct GripperCommand
 {
-  int8_t enabled;
-  int8_t position;
+  GripperOptions go;
 };
 
 // This is the end of the header guard

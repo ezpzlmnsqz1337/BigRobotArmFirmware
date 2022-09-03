@@ -9,17 +9,7 @@ struct Inputs
   int32_t rightY;
 };
 
-struct JointPositions
-{
-  int32_t base;
-  int32_t shoulder;
-  int32_t elbow;
-  int32_t wristRotate;
-  int32_t wrist;
-  int32_t gripper;
-};
-
-struct JointSpeeds
+struct JointOptions
 {
   int32_t base;
   int32_t shoulder;
@@ -27,14 +17,10 @@ struct JointSpeeds
   int32_t wristRotate;
   int32_t wrist;
 };
-
-struct JointAccelerations
+struct GripperOptions
 {
-  int32_t base;
-  int32_t shoulder;
-  int32_t elbow;
-  int32_t wristRotate;
-  int32_t wrist;
+  uint8_t enabled;
+  uint8_t position;
 };
 
 #endif

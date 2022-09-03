@@ -20,7 +20,12 @@ private:
 
 protected:
   void handlePositionCommand(uint8_t* command);
+  void handleAccelerationCommand(uint8_t* command);
+  void handleSpeedCommand(uint8_t* command);
+  void handleResetPositionsCommand();
+  void handleHomeCommand();
   void handleGripperCommand(uint8_t* command);
+  void handleSyncMotorsCommand(uint8_t* command);
 
 public:
   CommandHandler();

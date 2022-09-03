@@ -32,26 +32,29 @@ public:
 
   void init();
 
-  void goTo(const JointPositions& jp);
-  void goToSyncMultiStepper(const JointPositions& jp);
-  void goToSync(const JointPositions& jp);
-  void move(const JointPositions& jp);
+  void goTo(const JointOptions& jp);
+  void goToSyncMultiStepper(const JointOptions& jp);
+  void goToSync(const JointOptions& jp);
+  void move(const JointOptions& jp);
+
+  void handleGripper(const GripperOptions& go);
 
   void setSpeed(const float speed);
   void setAcceleration(const float acceleration);
   void setZeroPosition();
 
-  void setSpeeds(const JointSpeeds& jp);
-  void setAccelerations(const JointAccelerations& ja);
+  void setSpeeds(const JointOptions& jp);
+  void setAccelerations(const JointOptions& ja);
 
   bool isSyncEnabled();
   void setSyncMotors(const bool sync);
 
-  bool reachedPositions(const JointPositions& jp);
+  bool reachedPositions(const JointOptions& jp);
 
-  JointPositions getPositions();
-  JointAccelerations getAccelerations();
-  JointSpeeds getSpeeds();
+  JointOptions getPositions();
+  JointOptions getAccelerations();
+  JointOptions getSpeeds();
+  GripperOptions getGripperOptions();
 
   RobotArmJoint& getBase();
   RobotArmJoint& getShoulder();

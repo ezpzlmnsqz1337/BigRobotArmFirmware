@@ -3,7 +3,7 @@
 
 typedef enum CommandId
 {
-  GOTO_COMMAND_ID = 1,
+  POSITION_COMMAND_ID = 1,
   HOME_COMMAND_ID = 2,
   RESET_POSITION_COMMAND_ID = 3,
   SPEED_COMMAND_ID = 4,
