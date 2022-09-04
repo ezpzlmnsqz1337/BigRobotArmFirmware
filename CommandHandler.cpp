@@ -3,7 +3,6 @@
 #include "Commands.h"
 #include "Config.h"
 #include "Constants.h"
-#include "MemoryFree.h"
 
 CommandHandler::CommandHandler() : buffer("")
 {
@@ -29,7 +28,7 @@ void CommandHandler::handle()
       reset();
       return;
     }
-    if (sofar < BUFFER_SIZE)
+    if (sofar < BUFFER_SIZE_BYTES)
     {
       // if space in buffer, add char to buffer
       buffer[sofar++] = c;
@@ -39,12 +38,6 @@ void CommandHandler::handle()
 
 void CommandHandler::processCommand(uint8_t* command)
 {
-  bool valid = false;
-  // Serial.print("Free mem: ");
-  // Serial.write(freeMemory());
-  // Serial.print("Process command: ");
-  // Serial.write(reinterpret_cast<char*>(command));
-
   if (command)
   {
     switch (command[0])
@@ -73,12 +66,6 @@ void CommandHandler::processCommand(uint8_t* command)
     case CommandId::STATUS_COMMAND_ID:
       printStatus();
       break;
-    // case CommandId::BEGIN_COMMAND_ID:
-    // mArmBuilder.goTo(reinterpret_cast<BEGIN_COMMAND_ID*>(command[1])->positions);
-    // break;
-    // case CommandId::END_COMMAND_ID:
-    // mArmBuilder.goTo(reinterpret_cast<PositionCommand*>(command[1])->positions);
-    // break;
     default:
       // if unknown command
       printInvalidCommandResponse();
@@ -257,7 +244,7 @@ void CommandHandler::printInvalidCommandResponse()
 void CommandHandler::reset()
 {
   sofar = 0; // clear input buffer
-  for (int i = 0; i < BUFFER_SIZE; i++)
+  for (int i = 0; i < BUFFER_SIZE_BYTES; i++)
   {
     buffer[i] = 0;
   }

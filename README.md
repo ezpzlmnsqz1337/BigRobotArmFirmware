@@ -29,7 +29,7 @@ Firmware for BigRobotArm from instructables (https://www.instructables.com/Build
 ## Reset positions
 - sets current position of the motors to 0
 - example data `03`
-    - `02` - uint8_t reset positions command id
+    - `03` - uint8_t reset positions command id
 
 ## Speed
 - speed multiplier can be set from 1 to 300
@@ -109,17 +109,3 @@ Firmware for BigRobotArm from instructables (https://www.instructables.com/Build
     - `0d`, `0a` - char \r, char \n
     - `c8` - uint8_t command success id
     - `0d`, `0a` - char \r, char \n
-
-## Composite command (sequences)
-# Begin
-- `BEGIN Ix` after this command any command sent will be added to buffer to be executed when [End](#End) command is received. *x* is number of repetitions of the sequence.
-
-# End
-- `END` starts execution of commands in buffer for number of iterations set after the [Begin](#Begin) command.
-
-# Example
-- `BEGIN I5` start of sequence, number of interations is 5
-- `G0 B100 S200 E300 WR400 W300` move the arm to B100 S200 E300 WR400 W300
-- `G0 B0 S50 E5000 WR1500 W0` move the arm to B0 S50 E5000 WR1500 W0
-- `END` executes the sequence (the two commands above) 5 times
-

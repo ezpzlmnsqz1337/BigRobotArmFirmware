@@ -34,5 +34,4 @@ public:
   AccelStepper& getMotor();
 };
 
-// This is the end of the header guard
 #endif

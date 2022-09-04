@@ -7,5 +7,4 @@ enum MotorDirection
   NOT_HOME
 };
 
-// This is the end of the header guard
 #endif
