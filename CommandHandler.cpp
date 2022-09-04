@@ -74,11 +74,11 @@ void CommandHandler::processCommand(uint8_t* command)
       printStatus();
       break;
     // case CommandId::BEGIN_COMMAND_ID:
-    //   mArmBuilder.goTo(reinterpret_cast<BEGIN_COMMAND_ID*>(command[1])->positions);
-    //   break;
+    // mArmBuilder.goTo(reinterpret_cast<BEGIN_COMMAND_ID*>(command[1])->positions);
+    // break;
     // case CommandId::END_COMMAND_ID:
-    //   mArmBuilder.goTo(reinterpret_cast<PositionCommand*>(command[1])->positions);
-    //   break;
+    // mArmBuilder.goTo(reinterpret_cast<PositionCommand*>(command[1])->positions);
+    // break;
     default:
       // if unknown command
       printInvalidCommandResponse();
@@ -89,7 +89,8 @@ void CommandHandler::processCommand(uint8_t* command)
 
 void CommandHandler::handlePositionCommand(uint8_t* command)
 {
-  Serial.println(CommandId::POSITION_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::POSITION_COMMAND_ID));
+  Serial.println();
 
   JointOptions target = reinterpret_cast<const PositionCommand*>(command)->positions;
 
@@ -107,7 +108,8 @@ void CommandHandler::handlePositionCommand(uint8_t* command)
 
 void CommandHandler::handleAccelerationCommand(uint8_t* command)
 {
-  Serial.println(CommandId::ACCEL_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::ACCEL_COMMAND_ID));
+  Serial.println();
   mArmBuilder.setAccelerations(reinterpret_cast<const AccelerationCommand*>(command)->values);
 
   JointOptions jp = mArmBuilder.getAccelerations();
@@ -122,7 +124,8 @@ void CommandHandler::handleAccelerationCommand(uint8_t* command)
 
 void CommandHandler::handleSpeedCommand(uint8_t* command)
 {
-  Serial.println(CommandId::SPEED_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::SPEED_COMMAND_ID));
+  Serial.println();
   JointOptions speeds = reinterpret_cast<const SpeedCommand*>(command)->speeds;
   mArmBuilder.setSpeeds(speeds);
 
@@ -139,7 +142,8 @@ void CommandHandler::handleSpeedCommand(uint8_t* command)
 
 void CommandHandler::handleGripperCommand(uint8_t* command)
 {
-  Serial.println(CommandId::GRIPPER_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::GRIPPER_COMMAND_ID));
+  Serial.println();
   const GripperOptions go = reinterpret_cast<const GripperCommand*>(command)->go;
 
   mArmBuilder.handleGripper(go);
@@ -153,7 +157,8 @@ void CommandHandler::handleGripperCommand(uint8_t* command)
 
 void CommandHandler::handleResetPositionsCommand()
 {
-  Serial.println(CommandId::RESET_POSITION_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::RESET_POSITION_COMMAND_ID));
+  Serial.println();
   mArmBuilder.setZeroPosition();
 
   JointOptions jp = mArmBuilder.getPositions();
@@ -168,7 +173,8 @@ void CommandHandler::handleResetPositionsCommand()
 
 void CommandHandler::handleHomeCommand()
 {
-  Serial.println(CommandId::HOME_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::HOME_COMMAND_ID));
+  Serial.println();
   mArmBuilder.goTo({0, 0, 0, 0, 0});
 
   JointOptions jp = mArmBuilder.getPositions();
@@ -183,7 +189,8 @@ void CommandHandler::handleHomeCommand()
 
 void CommandHandler::handleSyncMotorsCommand(uint8_t* command)
 {
-  Serial.println(CommandId::SYNC_MOTORS_COMMAND_ID);
+  Serial.write(static_cast<uint8_t>(CommandId::SYNC_MOTORS_COMMAND_ID));
+  Serial.println();
   mArmBuilder.setSyncMotors(reinterpret_cast<const SyncMotorsCommand*>(command)->syncMotors);
   uint8_t enabled = mArmBuilder.isSyncEnabled() ? 1 : 0;
   Serial.write(enabled);
@@ -202,7 +209,8 @@ void CommandHandler::sendInt32(const int32_t cNum)
 void CommandHandler::printStatus()
 {
 
-  Serial.println(BigRobotArmStatus::STATUS);
+  Serial.write(static_cast<uint8_t>(BigRobotArmStatus::STATUS));
+  Serial.println();
   // positions
   JointOptions jp = mArmBuilder.getPositions();
   sendInt32(jp.base);
@@ -236,12 +244,14 @@ void CommandHandler::printStatus()
 
 void CommandHandler::printReadyResponse()
 {
-  Serial.println(BigRobotArmStatus::READY);
+  Serial.write(static_cast<uint8_t>(BigRobotArmStatus::READY));
+  Serial.println();
 }
 
 void CommandHandler::printInvalidCommandResponse()
 {
-  Serial.println(BigRobotArmStatus::INVALID_COMMAND);
+  Serial.write(static_cast<uint8_t>(BigRobotArmStatus::INVALID_COMMAND));
+  Serial.println();
 }
 
 void CommandHandler::reset()
