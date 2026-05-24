@@ -35,7 +35,15 @@ void CommandHandler::handle()
       buffer[sofar] = 0;
       strcpy(original, buffer);
       char* command = strtok(buffer, " ");
-      processCommand(command);
+      if (command != nullptr && strlen(command) > 0)
+      {
+        processCommand(command);
+      }
+      else
+      {
+        printInvalidCommandResponse();
+        printReadyResponse();
+      }
       reset();
       return;
     }
@@ -49,6 +57,13 @@ void CommandHandler::handle()
 
 void CommandHandler::processCommand(char* command)
 {
+  if (command == nullptr || command[0] == 0)
+  {
+    printInvalidCommandResponse();
+    printReadyResponse();
+    return;
+  }
+
   AbstractCommand* pCommand = nullptr;
   bool valid = false;
   Serial.print("Free mem: ");
@@ -153,8 +168,9 @@ void CommandHandler::printInvalidCommandResponse()
 void CommandHandler::reset()
 {
   sofar = 0; // clear input buffer
-  for (int i = 0; i < BUFFER_SIZE; i++)
+  for (int i = 0; i < COMMAND_BUFFER_CAPACITY; i++)
   {
     buffer[i] = 0;
+    original[i] = 0;
   }
 }

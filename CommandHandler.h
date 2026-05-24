@@ -10,6 +10,7 @@
 // This is the content of the .h file, which is where the declarations go
 
 const int8_t BUFFER_SIZE = 50;
+const int8_t COMMAND_BUFFER_CAPACITY = BUFFER_SIZE + 1;
 
 class CommandHandler
 {
@@ -17,8 +18,8 @@ private:
   ArmBuilder mArmBuilder;
 
   // serial handling
-  char buffer[BUFFER_SIZE];
-  char original[BUFFER_SIZE];
+  char buffer[COMMAND_BUFFER_CAPACITY];
+  char original[COMMAND_BUFFER_CAPACITY];
   int8_t sofar;
 
   // sequence handling
