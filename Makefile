@@ -18,12 +18,25 @@
 #   -t, --verify                       Verify uploaded binary after the upload.
 #       --vid-pid string               When specified, VID/PID specific build properties are used, if board supports them.
 #       --warnings string              Optional, can be "none", "default", "more" and "all". Defaults to "none". Used to tell gcc which warning level to use (-W flag). (default "none")
+ARDUINO_CLI ?= arduino-cli
+FQBN ?= arduino:avr:mega
+PORT ?= /dev/ttyUSB1
+SKETCH_DIR := BigRobotArm
 
-all:
-	mkdir BigRobotArm
-	cp *.ino BigRobotArm
-	cp *.h **/*.h **/*.cpp *.cpp BigRobotArm
-	cd BigRobotArm;	arduino-cli compile -b arduino:avr:mega -u -p /dev/ttyUSB1 -t	
+.PHONY: all prepare build upload clean
+
+all: build
+
+prepare: clean
+	mkdir -p $(SKETCH_DIR)
+	cp BigRobotArm.ino *.cpp *.h $(SKETCH_DIR)
+	cp commands/*.cpp commands/*.h $(SKETCH_DIR)
+
+build: prepare
+	cd $(SKETCH_DIR) && $(ARDUINO_CLI) compile -b $(FQBN) .
+
+upload: prepare
+	cd $(SKETCH_DIR) && $(ARDUINO_CLI) compile -b $(FQBN) -u -p $(PORT) -t .
 
 clean:
-	rm -rf BigRobotArm
+	rm -rf $(SKETCH_DIR)

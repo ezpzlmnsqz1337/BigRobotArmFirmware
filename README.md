@@ -1,6 +1,62 @@
 # BigRobotArmFirmware
 Firmware for BigRobotArm from instructables (https://www.instructables.com/Build-a-Giant-3D-Printed-Robot-Arm/)
 
+## Build
+
+This firmware is built with `arduino-cli` and a `Makefile` that prepares a temporary flat Arduino sketch layout before compiling.
+
+Available targets:
+
+- `make build` - prepare the temporary sketch directory and compile only
+- `make upload` - prepare the temporary sketch directory, compile, and upload
+- `make clean` - remove the generated sketch directory
+
+### Requirements
+
+- `arduino-cli`
+- Arduino AVR core installed in `arduino-cli`
+- Arduino libraries: `AccelStepper` and `Servo`
+- `make`
+
+Example setup with `arduino-cli`:
+
+```bash
+arduino-cli config init --overwrite
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+arduino-cli lib install AccelStepper
+arduino-cli lib install Servo
+```
+
+### Windows Git Bash
+
+This project can be built from Git Bash on Windows.
+
+One working setup is:
+
+```bash
+winget install --id ArduinoSA.CLI -e
+winget install --id ezwinports.make -e
+```
+
+Notes:
+
+- After installing with `winget`, restart Git Bash so the new commands are picked up from `PATH`.
+- `winget` installs `make` under its package directory and exposes it through the Windows environment, so a fresh shell is usually enough.
+- `make build` works well for local validation on Windows.
+- If you do upload from Windows, override the serial port as needed, for example `make upload PORT=COM3`.
+
+### Linux / Raspberry Pi
+
+The default upload port in the `Makefile` is `/dev/ttyUSB1`, which matches the original Raspberry Pi oriented workflow.
+
+Examples:
+
+```bash
+make build
+make upload PORT=/dev/ttyUSB1
+```
+
 
 # Commands
 
