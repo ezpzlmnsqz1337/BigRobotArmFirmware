@@ -1,6 +1,7 @@
 #include "CommandHandler.h"
 #include "CommandDispatchRules.h"
 #include "CommandInputRules.h"
+#include "SequenceLifecycleRules.h"
 #include "AbstractCommand.h"
 #include "AccelerationCommand.h"
 #include "Arduino.h"
@@ -114,7 +115,7 @@ void CommandHandler::processCommand(char* command)
   }
   else if (commandKind == COMMAND_DISPATCH_END) // end of sequence of commands
   {
-    if (mSequence != nullptr)
+    if (canExecuteSequenceOnDispatch(commandKind, mSequence != nullptr))
     {
       mSequence->execute();
       mSequence->printResponse();
@@ -130,7 +131,7 @@ void CommandHandler::processCommand(char* command)
     // init command by parsing the string data
     pCommand->parse(original);
     // if we have sequence
-    if (mSequence != nullptr)
+    if (shouldQueueCommandInActiveSequence(mSequence != nullptr))
     {
       // if we are now in a sequence, add command to the queue
       if (mSequence->addCommandToSequence(pCommand))

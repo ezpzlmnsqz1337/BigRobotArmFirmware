@@ -4,6 +4,7 @@
 #include "CommandInputRules.h"
 #include "Config.h"
 #include "FirmwareLimits.h"
+#include "SequenceLifecycleRules.h"
 #include "SequenceCommandRules.h"
 
 void setUp()
@@ -138,6 +139,24 @@ void test_can_append_command_byte_blocks_length_at_buffer_size()
   TEST_ASSERT_FALSE(canAppendCommandByte(commandBufferSize, commandBufferSize));
 }
 
+void test_can_execute_sequence_on_dispatch_requires_end_with_active_sequence()
+{
+  TEST_ASSERT_TRUE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_END, true));
+  TEST_ASSERT_FALSE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_END, false));
+}
+
+void test_can_execute_sequence_on_dispatch_rejects_non_end_commands()
+{
+  TEST_ASSERT_FALSE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_BEGIN, true));
+  TEST_ASSERT_FALSE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_G0, true));
+}
+
+void test_should_queue_command_in_active_sequence_reflects_sequence_state()
+{
+  TEST_ASSERT_TRUE(shouldQueueCommandInActiveSequence(true));
+  TEST_ASSERT_FALSE(shouldQueueCommandInActiveSequence(false));
+}
+
 int main(int argc, char** argv)
 {
   UNITY_BEGIN();
@@ -159,6 +178,9 @@ int main(int argc, char** argv)
   RUN_TEST(test_has_processable_command_token_accepts_non_empty_values);
   RUN_TEST(test_can_append_command_byte_allows_lengths_below_buffer_size);
   RUN_TEST(test_can_append_command_byte_blocks_length_at_buffer_size);
+  RUN_TEST(test_can_execute_sequence_on_dispatch_requires_end_with_active_sequence);
+  RUN_TEST(test_can_execute_sequence_on_dispatch_rejects_non_end_commands);
+  RUN_TEST(test_should_queue_command_in_active_sequence_reflects_sequence_state);
 
   return UNITY_END();
 }
