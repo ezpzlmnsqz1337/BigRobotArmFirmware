@@ -2,6 +2,14 @@
 #include "Arduino.h"
 #include "math.h"
 
+namespace
+{
+float clampMultiplier(const int32_t value, const long minValue, const long maxValue)
+{
+  return static_cast<float>(constrain(value, minValue, maxValue)) / 100;
+}
+} // namespace
+
 ArmBuilder::ArmBuilder()
 {
 }
@@ -210,20 +218,27 @@ JointAccelerations ArmBuilder::getAccelerations()
 
 void ArmBuilder::setSpeeds(const JointSpeeds& js)
 {
-  mBase.setMaxSpeedMultiplier(((float)js.base / 100));
-  mShoulder.setMaxSpeedMultiplier((float)js.shoulder / 100);
-  mElbow.setMaxSpeedMultiplier((float)js.elbow / 100);
-  mWristRotate.setMaxSpeedMultiplier((float)js.wristRotate / 100);
-  mWrist.setMaxSpeedMultiplier((float)js.wrist / 100);
+  mBase.setMaxSpeedMultiplier(clampMultiplier(js.base, Config::MIN_SPEED_MULTIPLIER, Config::MAX_SPEED_MULTIPLIER));
+  mShoulder.setMaxSpeedMultiplier(
+    clampMultiplier(js.shoulder, Config::MIN_SPEED_MULTIPLIER, Config::MAX_SPEED_MULTIPLIER));
+  mElbow.setMaxSpeedMultiplier(clampMultiplier(js.elbow, Config::MIN_SPEED_MULTIPLIER, Config::MAX_SPEED_MULTIPLIER));
+  mWristRotate.setMaxSpeedMultiplier(
+    clampMultiplier(js.wristRotate, Config::MIN_SPEED_MULTIPLIER, Config::MAX_SPEED_MULTIPLIER));
+  mWrist.setMaxSpeedMultiplier(clampMultiplier(js.wrist, Config::MIN_SPEED_MULTIPLIER, Config::MAX_SPEED_MULTIPLIER));
 }
 
 void ArmBuilder::setAccelerations(const JointAccelerations& ja)
 {
-  mBase.setAccelerationMultiplier(((float)ja.base / 100));
-  mShoulder.setAccelerationMultiplier((float)ja.shoulder / 100);
-  mElbow.setAccelerationMultiplier((float)ja.elbow / 100);
-  mWristRotate.setAccelerationMultiplier((float)ja.wristRotate / 100);
-  mWrist.setAccelerationMultiplier((float)ja.wrist / 100);
+  mBase.setAccelerationMultiplier(
+    clampMultiplier(ja.base, Config::MIN_ACCEL_MULTIPLIER, Config::MAX_ACCEL_MULTIPLIER));
+  mShoulder.setAccelerationMultiplier(
+    clampMultiplier(ja.shoulder, Config::MIN_ACCEL_MULTIPLIER, Config::MAX_ACCEL_MULTIPLIER));
+  mElbow.setAccelerationMultiplier(
+    clampMultiplier(ja.elbow, Config::MIN_ACCEL_MULTIPLIER, Config::MAX_ACCEL_MULTIPLIER));
+  mWristRotate.setAccelerationMultiplier(
+    clampMultiplier(ja.wristRotate, Config::MIN_ACCEL_MULTIPLIER, Config::MAX_ACCEL_MULTIPLIER));
+  mWrist.setAccelerationMultiplier(
+    clampMultiplier(ja.wrist, Config::MIN_ACCEL_MULTIPLIER, Config::MAX_ACCEL_MULTIPLIER));
 }
 
 float ArmBuilder::findMaxInArray(const float* array, const int32_t size)
