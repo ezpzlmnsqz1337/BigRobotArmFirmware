@@ -3,29 +3,16 @@ Firmware for BigRobotArm from instructables (https://www.instructables.com/Build
 
 ## Build
 
-This firmware is built with `arduino-cli` and a `Makefile` that prepares a temporary flat Arduino sketch layout before compiling.
-
-Available targets:
-
-- `make build` - prepare the temporary sketch directory and compile only
-- `make upload` - prepare the temporary sketch directory, compile, and upload
-- `make clean` - remove the generated sketch directory
+This firmware is built with PlatformIO.
 
 ### Requirements
 
-- `arduino-cli`
-- Arduino AVR core installed in `arduino-cli`
-- Arduino libraries: `AccelStepper` and `Servo`
-- `make`
+- PlatformIO Core
 
-Example setup with `arduino-cli`:
+Preferred installation in this workspace:
 
 ```bash
-arduino-cli config init --overwrite
-arduino-cli core update-index
-arduino-cli core install arduino:avr
-arduino-cli lib install AccelStepper
-arduino-cli lib install Servo
+uv tool install platformio
 ```
 
 ### Windows Git Bash
@@ -35,27 +22,49 @@ This project can be built from Git Bash on Windows.
 One working setup is:
 
 ```bash
-winget install --id ArduinoSA.CLI -e
-winget install --id ezwinports.make -e
+uv tool install platformio
 ```
 
 Notes:
 
-- After installing with `winget`, restart Git Bash so the new commands are picked up from `PATH`.
-- `winget` installs `make` under its package directory and exposes it through the Windows environment, so a fresh shell is usually enough.
-- `make build` works well for local validation on Windows.
-- If you do upload from Windows, override the serial port as needed, for example `make upload PORT=COM3`.
+- If `pio` is not immediately visible after installation, restart Git Bash so the updated tool path is picked up.
+- This repo has been validated with PlatformIO from Git Bash on Windows.
 
 ### Linux / Raspberry Pi
 
-The default upload port in the `Makefile` is `/dev/ttyUSB1`, which matches the original Raspberry Pi oriented workflow.
+Upload can be done directly with PlatformIO on Linux or Raspberry Pi by specifying the serial device.
 
 Examples:
 
 ```bash
-make build
-make upload PORT=/dev/ttyUSB1
+pio run
+pio run -t upload --upload-port /dev/ttyUSB1
 ```
+
+## PlatformIO
+
+PlatformIO is the primary firmware workflow for this project.
+
+The current `platformio.ini` is intentionally non-destructive:
+
+- it keeps the existing source layout
+- it adds the include paths needed by the current command files
+- it builds the firmware for `megaatmega2560`
+- it is intended to be the canonical build path going forward
+
+Build with PlatformIO:
+
+```bash
+pio run
+```
+
+Upload with PlatformIO:
+
+```bash
+pio run -t upload --upload-port /dev/ttyUSB1
+```
+
+This is also the base for future migration toward firmware tests.
 
 
 # Commands
