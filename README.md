@@ -17,18 +17,21 @@ uv tool install platformio
 
 ### Windows Git Bash
 
-This project can be built from Git Bash on Windows.
+This project can be built and tested from Git Bash on Windows.
 
 One working setup is:
 
 ```bash
 uv tool install platformio
+winget install --id MSYS2.MSYS2 -e --accept-package-agreements --accept-source-agreements
+/c/msys64/usr/bin/bash.exe -lc "pacman -Sy --noconfirm mingw-w64-ucrt-x86_64-gcc"
 ```
 
 Notes:
 
 - If `pio` is not immediately visible after installation, restart Git Bash so the updated tool path is picked up.
 - This repo has been validated with PlatformIO from Git Bash on Windows.
+- Native host-side tests use the MSYS2 UCRT GCC toolchain from `C:/msys64/ucrt64/bin`.
 
 ### Linux / Raspberry Pi
 
@@ -58,13 +61,19 @@ Build with PlatformIO:
 pio run
 ```
 
+Run host-side tests with PlatformIO:
+
+```bash
+pio test -e native
+```
+
 Upload with PlatformIO:
 
 ```bash
 pio run -t upload --upload-port /dev/ttyUSB1
 ```
 
-This is also the base for future migration toward firmware tests.
+The native test environment currently exercises pure helper code without pulling in Arduino runtime dependencies.
 
 
 # Commands

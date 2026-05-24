@@ -1,4 +1,5 @@
 #include "ArmBuilder.h"
+#include "FirmwareLimits.h"
 #include "Arduino.h"
 #include "math.h"
 
@@ -6,7 +7,7 @@ namespace
 {
 float clampMultiplier(const int32_t value, const long minValue, const long maxValue)
 {
-  return static_cast<float>(constrain(value, minValue, maxValue)) / 100;
+  return static_cast<float>(clampConfiguredValue(value, minValue, maxValue)) / 100;
 }
 } // namespace
 
