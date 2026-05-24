@@ -2,7 +2,7 @@
 #include "Arduino.h"
 
 MyServo::MyServo(int32_t _servoPin, int32_t _minimum, int32_t _maximum, int32_t _pos)
-    : servoPin(_servoPin), minimum(_minimum), maximum(_maximum), pos(_pos), targetPosition(_pos)
+  : minimum(_minimum), maximum(_maximum), pos(_pos), servoPin(_servoPin), targetPosition(_pos)
 {
 }
 

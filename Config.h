@@ -17,7 +17,7 @@ static const long MIN_ACCEL_MULTIPLIER = 1;
 static const long MAX_ACCEL_MULTIPLIER = 500;
 } // namespace Config
 
-typedef enum Microstepping
+enum Microstepping
 {
   HALF_STEPPING = 2,
   MICRO_4 = 4,
@@ -25,7 +25,7 @@ typedef enum Microstepping
   MICRO_16 = 16
 };
 
-typedef enum Motors
+enum Motors
 {
   M1_STEP = 54,
   M1_DIR = 55,
