@@ -1,4 +1,5 @@
 #include "CommandHandler.h"
+#include "CommandDispatchRules.h"
 #include "AbstractCommand.h"
 #include "AccelerationCommand.h"
 #include "Arduino.h"
@@ -57,7 +58,8 @@ void CommandHandler::handle()
 
 void CommandHandler::processCommand(char* command)
 {
-  if (command == nullptr || command[0] == 0)
+  const CommandDispatchKind commandKind = classifyCommandToken(command);
+  if (commandKind == COMMAND_DISPATCH_INVALID)
   {
     printInvalidCommandResponse();
     printReadyResponse();
@@ -71,54 +73,45 @@ void CommandHandler::processCommand(char* command)
   Serial.print("Process command: ");
   Serial.println(original);
 
-  if (command[0] == 'G')
+  if (commandKind == COMMAND_DISPATCH_G0)
   {
-    int32_t gNumber = atoi(&command[1]);
-    switch (gNumber)
-    {
-    case 0:
-      pCommand = new PositionCommand(mArmBuilder);
-      break;
-    case 1:
-      pCommand = new GripperCommand(mArmBuilder);
-      break;
-    case 28:
-      pCommand = new HomeCommand(mArmBuilder);
-      break;
-    case 92:
-      pCommand = new ResetPositionCommand(mArmBuilder);
-      break;
-    default:
-      valid = false;
-    }
+    pCommand = new PositionCommand(mArmBuilder);
   }
-  else if (command[0] == 'M')
+  else if (commandKind == COMMAND_DISPATCH_G1)
   {
-    int32_t mNumber = atoi(&command[1]);
-    if (mNumber == 201)
-    {
-      pCommand = new AccelerationCommand(mArmBuilder);
-    }
-    else if (mNumber == 203)
-    {
-      pCommand = new SpeedCommand(mArmBuilder);
-    }
-    else if (mNumber == 503)
-    {
-      pCommand = new StatusCommand(mArmBuilder);
-    }
+    pCommand = new GripperCommand(mArmBuilder);
   }
-  else if (command[0] == 'S')
+  else if (commandKind == COMMAND_DISPATCH_G28)
+  {
+    pCommand = new HomeCommand(mArmBuilder);
+  }
+  else if (commandKind == COMMAND_DISPATCH_G92)
+  {
+    pCommand = new ResetPositionCommand(mArmBuilder);
+  }
+  else if (commandKind == COMMAND_DISPATCH_M201)
+  {
+    pCommand = new AccelerationCommand(mArmBuilder);
+  }
+  else if (commandKind == COMMAND_DISPATCH_M203)
+  {
+    pCommand = new SpeedCommand(mArmBuilder);
+  }
+  else if (commandKind == COMMAND_DISPATCH_M503)
+  {
+    pCommand = new StatusCommand(mArmBuilder);
+  }
+  else if (commandKind == COMMAND_DISPATCH_SYNC)
   {
     pCommand = new SyncMotorsCommand(mArmBuilder);
   }
-  else if (strcmp(command, "BEGIN") == 0) // start of sequence of commands
+  else if (commandKind == COMMAND_DISPATCH_BEGIN) // start of sequence of commands
   {
     mSequence = new CompositeCommand(mArmBuilder);
     mSequence->parse(original);
     valid = true;
   }
-  else if (strcmp(command, "END") == 0) // end of sequence of commands
+  else if (commandKind == COMMAND_DISPATCH_END) // end of sequence of commands
   {
     if (mSequence != nullptr)
     {

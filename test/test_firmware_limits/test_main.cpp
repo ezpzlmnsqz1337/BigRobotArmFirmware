@@ -1,5 +1,6 @@
 #include <unity.h>
 
+#include "CommandDispatchRules.h"
 #include "Config.h"
 #include "FirmwareLimits.h"
 #include "SequenceCommandRules.h"
@@ -56,6 +57,59 @@ void test_can_add_sequence_command_blocks_values_at_capacity()
   TEST_ASSERT_FALSE(canAddSequenceCommand(MAX_SEQUENCE_COMMANDS));
 }
 
+void test_classify_command_token_rejects_null_and_empty_values()
+{
+  char emptyCommand[] = "";
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(nullptr));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(emptyCommand));
+}
+
+void test_classify_command_token_recognizes_supported_g_commands()
+{
+  char g0Command[] = "G0";
+  char g1Command[] = "G1";
+  char g28Command[] = "G28";
+  char g92Command[] = "G92";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G0, classifyCommandToken(g0Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G1, classifyCommandToken(g1Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G28, classifyCommandToken(g28Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G92, classifyCommandToken(g92Command));
+}
+
+void test_classify_command_token_recognizes_supported_m_commands()
+{
+  char m201Command[] = "M201";
+  char m203Command[] = "M203";
+  char m503Command[] = "M503";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_M201, classifyCommandToken(m201Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_M203, classifyCommandToken(m203Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_M503, classifyCommandToken(m503Command));
+}
+
+void test_classify_command_token_recognizes_sequence_and_sync_commands()
+{
+  char beginCommand[] = "BEGIN";
+  char endCommand[] = "END";
+  char syncCommand[] = "S1";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_BEGIN, classifyCommandToken(beginCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_END, classifyCommandToken(endCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_SYNC, classifyCommandToken(syncCommand));
+}
+
+void test_classify_command_token_rejects_unknown_commands()
+{
+  char unknownGCommand[] = "G999";
+  char unknownMCommand[] = "M999";
+  char unknownPrefixCommand[] = "X1";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(unknownGCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(unknownMCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(unknownPrefixCommand));
+}
+
 int main(int argc, char** argv)
 {
   UNITY_BEGIN();
@@ -68,6 +122,11 @@ int main(int argc, char** argv)
   RUN_TEST(test_parse_sequence_repetitions_defaults_to_one_for_unexpected_prefix);
   RUN_TEST(test_can_add_sequence_command_allows_values_below_capacity);
   RUN_TEST(test_can_add_sequence_command_blocks_values_at_capacity);
+  RUN_TEST(test_classify_command_token_rejects_null_and_empty_values);
+  RUN_TEST(test_classify_command_token_recognizes_supported_g_commands);
+  RUN_TEST(test_classify_command_token_recognizes_supported_m_commands);
+  RUN_TEST(test_classify_command_token_recognizes_sequence_and_sync_commands);
+  RUN_TEST(test_classify_command_token_rejects_unknown_commands);
 
   return UNITY_END();
 }
