@@ -139,7 +139,14 @@ void CommandHandler::processCommand(char* command)
     if (mSequence != nullptr)
     {
       // if we are now in a sequence, add command to the queue
-      mSequence->addCommandToSequence(pCommand);
+      if (mSequence->addCommandToSequence(pCommand))
+      {
+        valid = true;
+      }
+      else
+      {
+        delete pCommand;
+      }
     }
     else
     {
@@ -147,8 +154,8 @@ void CommandHandler::processCommand(char* command)
       pCommand->execute();
       pCommand->printResponse();
       delete pCommand;
+      valid = true;
     }
-    valid = true;
   }
   if (!valid)
   {

@@ -21,7 +21,7 @@ public:
   void parse(char* cCommand) override;
   void execute() override;
   void printResponse() override;
-  void addCommandToSequence(AbstractCommand* pCommand);
+  bool addCommandToSequence(AbstractCommand* pCommand);
 };
 
 // This is the end of the header guard

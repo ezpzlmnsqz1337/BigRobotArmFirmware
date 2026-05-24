@@ -50,8 +50,14 @@ void CompositeCommand::printResponse()
   delete status;
 }
 
-void CompositeCommand::addCommandToSequence(AbstractCommand* pCommand)
+bool CompositeCommand::addCommandToSequence(AbstractCommand* pCommand)
 {
+  if (numOfSequenceCommands >= MAX_SEQUENCE_COMMANDS)
+  {
+    return false;
+  }
+
   mSequence[numOfSequenceCommands] = pCommand;
   numOfSequenceCommands++;
+  return true;
 }
