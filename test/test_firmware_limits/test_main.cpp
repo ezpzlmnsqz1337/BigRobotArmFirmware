@@ -1,6 +1,7 @@
 #include <unity.h>
 
 #include "CommandDispatchRules.h"
+#include "CommandInputRules.h"
 #include "Config.h"
 #include "FirmwareLimits.h"
 #include "SequenceCommandRules.h"
@@ -110,6 +111,33 @@ void test_classify_command_token_rejects_unknown_commands()
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(unknownPrefixCommand));
 }
 
+void test_has_processable_command_token_rejects_null_and_empty_values()
+{
+  char emptyCommand[] = "";
+
+  TEST_ASSERT_FALSE(hasProcessableCommandToken(nullptr));
+  TEST_ASSERT_FALSE(hasProcessableCommandToken(emptyCommand));
+}
+
+void test_has_processable_command_token_accepts_non_empty_values()
+{
+  char command[] = "G0";
+
+  TEST_ASSERT_TRUE(hasProcessableCommandToken(command));
+}
+
+void test_can_append_command_byte_allows_lengths_below_buffer_size()
+{
+  const int commandBufferSize = 50;
+  TEST_ASSERT_TRUE(canAppendCommandByte(commandBufferSize - 1, commandBufferSize));
+}
+
+void test_can_append_command_byte_blocks_length_at_buffer_size()
+{
+  const int commandBufferSize = 50;
+  TEST_ASSERT_FALSE(canAppendCommandByte(commandBufferSize, commandBufferSize));
+}
+
 int main(int argc, char** argv)
 {
   UNITY_BEGIN();
@@ -127,6 +155,10 @@ int main(int argc, char** argv)
   RUN_TEST(test_classify_command_token_recognizes_supported_m_commands);
   RUN_TEST(test_classify_command_token_recognizes_sequence_and_sync_commands);
   RUN_TEST(test_classify_command_token_rejects_unknown_commands);
+  RUN_TEST(test_has_processable_command_token_rejects_null_and_empty_values);
+  RUN_TEST(test_has_processable_command_token_accepts_non_empty_values);
+  RUN_TEST(test_can_append_command_byte_allows_lengths_below_buffer_size);
+  RUN_TEST(test_can_append_command_byte_blocks_length_at_buffer_size);
 
   return UNITY_END();
 }

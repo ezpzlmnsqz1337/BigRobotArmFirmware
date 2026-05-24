@@ -1,5 +1,6 @@
 #include "CommandHandler.h"
 #include "CommandDispatchRules.h"
+#include "CommandInputRules.h"
 #include "AbstractCommand.h"
 #include "AccelerationCommand.h"
 #include "Arduino.h"
@@ -36,7 +37,7 @@ void CommandHandler::handle()
       buffer[sofar] = 0;
       strcpy(original, buffer);
       char* command = strtok(buffer, " ");
-      if (command != nullptr && strlen(command) > 0)
+      if (hasProcessableCommandToken(command))
       {
         processCommand(command);
       }
@@ -48,7 +49,7 @@ void CommandHandler::handle()
       reset();
       return;
     }
-    if (sofar < BUFFER_SIZE)
+    if (canAppendCommandByte(sofar, BUFFER_SIZE))
     {
       // if space in buffer, add char to buffer
       buffer[sofar++] = c;
