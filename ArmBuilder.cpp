@@ -95,8 +95,13 @@ void ArmBuilder::goTo(const JointPositions& jp)
 void ArmBuilder::goToSyncMultiStepper(const JointPositions& jp)
 {
   long position[]{jp.base, jp.shoulder, jp.elbow, jp.wristRotate, jp.wrist};
+  mGripper.getServo().setTargetPosition(jp.gripper);
   mMultiStepper.moveTo(position);
-  mMultiStepper.runSpeedToPosition();
+
+  while (mMultiStepper.run() || mGripper.getServo().getPosition() != jp.gripper)
+  {
+    mGripper.getServo().loop();
+  }
 }
 
 void ArmBuilder::goToSync(const JointPositions& jp)
