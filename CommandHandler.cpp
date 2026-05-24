@@ -120,11 +120,14 @@ void CommandHandler::processCommand(char* command)
   }
   else if (strcmp(command, "END") == 0) // end of sequence of commands
   {
-    mSequence->execute();
-    mSequence->printResponse();
-    delete mSequence;
-    mSequence = nullptr;
-    valid = true;
+    if (mSequence != nullptr)
+    {
+      mSequence->execute();
+      mSequence->printResponse();
+      delete mSequence;
+      mSequence = nullptr;
+      valid = true;
+    }
   }
 
   // if we have some command
