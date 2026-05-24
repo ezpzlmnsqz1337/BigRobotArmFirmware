@@ -27,7 +27,7 @@ void CompositeCommand::parse(char* cCommand)
   strtok(cCommand, " ");
   // set number of repetitions
   char* repetitions = strtok(NULL, " ");
-  numOfSequenceRepetitions = repetitions != NULL ? atoi(&repetitions[1]) : 1;
+  numOfSequenceRepetitions = parseSequenceRepetitions(repetitions);
 }
 
 void CompositeCommand::execute()
@@ -52,7 +52,7 @@ void CompositeCommand::printResponse()
 
 bool CompositeCommand::addCommandToSequence(AbstractCommand* pCommand)
 {
-  if (numOfSequenceCommands >= MAX_SEQUENCE_COMMANDS)
+  if (!canAddSequenceCommand(numOfSequenceCommands))
   {
     return false;
   }

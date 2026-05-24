@@ -4,13 +4,13 @@
 
 #include "AbstractCommand.h"
 #include "ArmBuilder.h"
+#include "SequenceCommandRules.h"
 #include "Structures.h"
 
 // This is the content of the .h file, which is where the declarations go
 
 class CompositeCommand : public AbstractCommand
 {
-  static const int8_t MAX_SEQUENCE_COMMANDS = 20;
   AbstractCommand* mSequence[MAX_SEQUENCE_COMMANDS];
   int8_t numOfSequenceCommands = 0;
   int8_t numOfSequenceRepetitions = 1;
