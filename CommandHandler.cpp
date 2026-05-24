@@ -12,15 +12,15 @@
 #include "StatusCommand.h"
 #include "SyncMotorsCommand.h"
 
-CommandHandler::CommandHandler() : buffer(""), original(""), mSequence(nullptr)
+CommandHandler::CommandHandler() : mArmBuilder(nullptr), buffer(""), original(""), mSequence(nullptr)
 {
   sofar = 0;
 }
 
-void CommandHandler::init(const ArmBuilder& armBuilder)
+void CommandHandler::init(ArmBuilder& armBuilder)
 {
   Serial.begin(250000);
-  mArmBuilder = armBuilder;
+  mArmBuilder = &armBuilder;
   reset();
 }
 
@@ -77,16 +77,16 @@ void CommandHandler::processCommand(char* command)
     switch (gNumber)
     {
     case 0:
-      pCommand = new PositionCommand(&mArmBuilder);
+      pCommand = new PositionCommand(mArmBuilder);
       break;
     case 1:
-      pCommand = new GripperCommand(&mArmBuilder);
+      pCommand = new GripperCommand(mArmBuilder);
       break;
     case 28:
-      pCommand = new HomeCommand(&mArmBuilder);
+      pCommand = new HomeCommand(mArmBuilder);
       break;
     case 92:
-      pCommand = new ResetPositionCommand(&mArmBuilder);
+      pCommand = new ResetPositionCommand(mArmBuilder);
       break;
     default:
       valid = false;
@@ -97,24 +97,24 @@ void CommandHandler::processCommand(char* command)
     int32_t mNumber = atoi(&command[1]);
     if (mNumber == 201)
     {
-      pCommand = new AccelerationCommand(&mArmBuilder);
+      pCommand = new AccelerationCommand(mArmBuilder);
     }
     else if (mNumber == 203)
     {
-      pCommand = new SpeedCommand(&mArmBuilder);
+      pCommand = new SpeedCommand(mArmBuilder);
     }
     else if (mNumber == 503)
     {
-      pCommand = new StatusCommand(&mArmBuilder);
+      pCommand = new StatusCommand(mArmBuilder);
     }
   }
   else if (command[0] == 'S')
   {
-    pCommand = new SyncMotorsCommand(&mArmBuilder);
+    pCommand = new SyncMotorsCommand(mArmBuilder);
   }
   else if (strcmp(command, "BEGIN") == 0) // start of sequence of commands
   {
-    mSequence = new CompositeCommand(&mArmBuilder);
+    mSequence = new CompositeCommand(mArmBuilder);
     mSequence->parse(original);
     valid = true;
   }

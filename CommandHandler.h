@@ -15,7 +15,7 @@ const int8_t COMMAND_BUFFER_CAPACITY = BUFFER_SIZE + 1;
 class CommandHandler
 {
 private:
-  ArmBuilder mArmBuilder;
+  ArmBuilder* mArmBuilder;
 
   // serial handling
   char buffer[COMMAND_BUFFER_CAPACITY];
@@ -28,7 +28,7 @@ private:
 public:
   CommandHandler();
 
-  void init(const ArmBuilder& mArmBuilder);
+  void init(ArmBuilder& mArmBuilder);
 
   void handle();
 
