@@ -2,6 +2,7 @@
 
 #include "CommandDispatchRules.h"
 #include "CommandInputRules.h"
+#include "CommandResponseRules.h"
 #include "Config.h"
 #include "FirmwareLimits.h"
 #include "SequenceLifecycleRules.h"
@@ -157,6 +158,16 @@ void test_should_queue_command_in_active_sequence_reflects_sequence_state()
   TEST_ASSERT_FALSE(shouldQueueCommandInActiveSequence(false));
 }
 
+void test_ready_response_message_matches_ui_contract()
+{
+  TEST_ASSERT_EQUAL_STRING("BigRobotArm::READY", readyResponseMessage());
+}
+
+void test_invalid_command_response_message_matches_ui_contract()
+{
+  TEST_ASSERT_EQUAL_STRING("BigRobotArm::INVALID-COMMAND", invalidCommandResponseMessage());
+}
+
 int main(int argc, char** argv)
 {
   UNITY_BEGIN();
@@ -181,6 +192,8 @@ int main(int argc, char** argv)
   RUN_TEST(test_can_execute_sequence_on_dispatch_requires_end_with_active_sequence);
   RUN_TEST(test_can_execute_sequence_on_dispatch_rejects_non_end_commands);
   RUN_TEST(test_should_queue_command_in_active_sequence_reflects_sequence_state);
+  RUN_TEST(test_ready_response_message_matches_ui_contract);
+  RUN_TEST(test_invalid_command_response_message_matches_ui_contract);
 
   return UNITY_END();
 }

@@ -1,6 +1,7 @@
 #include "CommandHandler.h"
 #include "CommandDispatchRules.h"
 #include "CommandInputRules.h"
+#include "CommandResponseRules.h"
 #include "SequenceLifecycleRules.h"
 #include "AbstractCommand.h"
 #include "AccelerationCommand.h"
@@ -162,12 +163,12 @@ void CommandHandler::processCommand(char* command)
 
 void CommandHandler::printReadyResponse()
 {
-  Serial.println("BigRobotArm::READY");
+  Serial.println(readyResponseMessage());
 }
 
 void CommandHandler::printInvalidCommandResponse()
 {
-  Serial.println("BigRobotArm::INVALID-COMMAND");
+  Serial.println(invalidCommandResponseMessage());
 }
 
 void CommandHandler::reset()
