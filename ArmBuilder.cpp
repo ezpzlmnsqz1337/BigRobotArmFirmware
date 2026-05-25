@@ -109,6 +109,12 @@ void ArmBuilder::goTo(const JointPositions& jp)
 
 bool ArmBuilder::queueMove(const JointPositions& jp)
 {
+  if (!mMotionActive && mMotionQueue.isEmpty())
+  {
+    startMotion(jp);
+    return true;
+  }
+
   return mMotionQueue.enqueue(jp);
 }
 
@@ -162,6 +168,29 @@ void ArmBuilder::serviceMotion()
 bool ArmBuilder::isMotionActive()
 {
   return mMotionActive;
+}
+
+bool ArmBuilder::hasQueuedMoves() const
+{
+  return !mMotionQueue.isEmpty();
+}
+
+bool ArmBuilder::isMotionPending() const
+{
+  return mMotionActive || !mMotionQueue.isEmpty();
+}
+
+void ArmBuilder::flushMotionQueue()
+{
+  while (isMotionPending())
+  {
+    serviceMotion();
+  }
+}
+
+void ArmBuilder::clearMotionQueue()
+{
+  mMotionQueue.clear();
 }
 
 void ArmBuilder::goToSyncMultiStepper(const JointPositions& jp)

@@ -16,6 +16,48 @@
 #include "StatusCommand.h"
 #include "SyncMotorsCommand.h"
 
+namespace
+{
+JointPositions parsePositionTarget(const char* rawCommand, ArmBuilder* armBuilder)
+{
+  char commandCopy[COMMAND_BUFFER_CAPACITY];
+  strncpy(commandCopy, rawCommand, COMMAND_BUFFER_CAPACITY - 1);
+  commandCopy[COMMAND_BUFFER_CAPACITY - 1] = 0;
+
+  strtok(commandCopy, " ");
+  char* base = strtok(NULL, " ");
+  char* shoulder = strtok(NULL, " ");
+  char* elbow = strtok(NULL, " ");
+  char* wristRotate = strtok(NULL, " ");
+  char* wrist = strtok(NULL, " ");
+
+  JointPositions jp = armBuilder->getPositions();
+  jp.base = base != NULL ? atol(&base[1]) : jp.base;
+  jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : jp.shoulder;
+  jp.elbow = elbow != NULL ? atol(&elbow[1]) : jp.elbow;
+  jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[2]) : jp.wristRotate;
+  jp.wrist = wrist != NULL ? atol(&wrist[1]) : jp.wrist;
+
+  return jp;
+}
+
+void printPositionResponse(const char* header, const JointPositions& jp)
+{
+  Serial.println(header);
+  Serial.print("BigRobotArm::POSITION: ");
+  Serial.print("B");
+  Serial.print(jp.base);
+  Serial.print(" S");
+  Serial.print(jp.shoulder);
+  Serial.print(" E");
+  Serial.print(jp.elbow);
+  Serial.print(" WR");
+  Serial.print(jp.wristRotate);
+  Serial.print(" W");
+  Serial.println(jp.wrist);
+}
+} // namespace
+
 CommandHandler::CommandHandler() : mArmBuilder(nullptr), buffer(""), original(""), mSequence(nullptr)
 {
   sofar = 0;
@@ -79,6 +121,31 @@ void CommandHandler::processCommand(char* command)
   if (commandKind == COMMAND_DISPATCH_G0)
   {
     pCommand = new PositionCommand(mArmBuilder);
+  }
+  else if (commandKind == COMMAND_DISPATCH_Q0)
+  {
+    const JointPositions jp = parsePositionTarget(original, mArmBuilder);
+    if (mArmBuilder->queueMove(jp))
+    {
+      printPositionResponse("BigRobotArm::QUEUED-TO", jp);
+    }
+    else
+    {
+      Serial.println("BigRobotArm::QUEUE-FULL");
+    }
+    valid = true;
+  }
+  else if (commandKind == COMMAND_DISPATCH_QFLUSH)
+  {
+    mArmBuilder->flushMotionQueue();
+    Serial.println("BigRobotArm::QUEUE-DRAINED");
+    valid = true;
+  }
+  else if (commandKind == COMMAND_DISPATCH_QCLEAR)
+  {
+    mArmBuilder->clearMotionQueue();
+    Serial.println("BigRobotArm::QUEUE-CLEARED");
+    valid = true;
   }
   else if (commandKind == COMMAND_DISPATCH_G1)
   {

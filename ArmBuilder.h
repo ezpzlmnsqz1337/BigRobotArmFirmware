@@ -43,6 +43,10 @@ public:
   bool queueMove(const JointPositions& jp);
   void serviceMotion();
   bool isMotionActive();
+  bool hasQueuedMoves() const;
+  bool isMotionPending() const;
+  void flushMotionQueue();
+  void clearMotionQueue();
   void move(const JointPositions& jp);
 
   void setSpeed(const float speed);

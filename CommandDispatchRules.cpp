@@ -20,6 +20,21 @@ CommandDispatchKind classifyCommandToken(const char* command)
     return COMMAND_DISPATCH_END;
   }
 
+  if (strcmp(command, "QFLUSH") == 0)
+  {
+    return COMMAND_DISPATCH_QFLUSH;
+  }
+
+  if (strcmp(command, "QCLEAR") == 0)
+  {
+    return COMMAND_DISPATCH_QCLEAR;
+  }
+
+  if (strcmp(command, "Q0") == 0)
+  {
+    return COMMAND_DISPATCH_Q0;
+  }
+
   if (command[0] == 'S')
   {
     return COMMAND_DISPATCH_SYNC;

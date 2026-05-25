@@ -71,11 +71,13 @@ void test_classify_command_token_rejects_null_and_empty_values()
 void test_classify_command_token_recognizes_supported_g_commands()
 {
   char g0Command[] = "G0";
+  char q0Command[] = "Q0";
   char g1Command[] = "G1";
   char g28Command[] = "G28";
   char g92Command[] = "G92";
 
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G0, classifyCommandToken(g0Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_Q0, classifyCommandToken(q0Command));
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G1, classifyCommandToken(g1Command));
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G28, classifyCommandToken(g28Command));
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G92, classifyCommandToken(g92Command));
@@ -97,10 +99,14 @@ void test_classify_command_token_recognizes_sequence_and_sync_commands()
   char beginCommand[] = "BEGIN";
   char endCommand[] = "END";
   char syncCommand[] = "S1";
+  char flushCommand[] = "QFLUSH";
+  char clearCommand[] = "QCLEAR";
 
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_BEGIN, classifyCommandToken(beginCommand));
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_END, classifyCommandToken(endCommand));
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_SYNC, classifyCommandToken(syncCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_QFLUSH, classifyCommandToken(flushCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_QCLEAR, classifyCommandToken(clearCommand));
 }
 
 void test_classify_command_token_rejects_unknown_commands()
@@ -212,6 +218,20 @@ void test_motion_queue_returns_false_when_empty()
   TEST_ASSERT_FALSE(queue.dequeue(target));
 }
 
+void test_motion_queue_clear_discards_pending_positions()
+{
+  MotionQueue queue;
+  JointPositions target{1, 2, 3, 4, 5, 6};
+
+  TEST_ASSERT_TRUE(queue.enqueue(target));
+  TEST_ASSERT_FALSE(queue.isEmpty());
+
+  queue.clear();
+
+  TEST_ASSERT_TRUE(queue.isEmpty());
+  TEST_ASSERT_EQUAL_UINT8(0, queue.size());
+}
+
 int main(int argc, char** argv)
 {
   UNITY_BEGIN();
@@ -241,6 +261,7 @@ int main(int argc, char** argv)
   RUN_TEST(test_motion_queue_enqueues_and_dequeues_positions_in_order);
   RUN_TEST(test_motion_queue_rejects_enqueue_when_full);
   RUN_TEST(test_motion_queue_returns_false_when_empty);
+  RUN_TEST(test_motion_queue_clear_discards_pending_positions);
 
   return UNITY_END();
 }
