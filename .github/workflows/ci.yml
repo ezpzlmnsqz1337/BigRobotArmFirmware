@@ -1,0 +1,29 @@
+name: Firmware CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Build firmware
+        run: uv tool run --from platformio platformio run
+
+      - name: Run native firmware tests
+        run: uv tool run --from platformio platformio test -e native
