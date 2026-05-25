@@ -5,6 +5,7 @@
 #include "CommandResponseRules.h"
 #include "Config.h"
 #include "FirmwareLimits.h"
+#include "MotionQueue.h"
 #include "SequenceLifecycleRules.h"
 #include "SequenceCommandRules.h"
 
@@ -168,6 +169,49 @@ void test_invalid_command_response_message_matches_ui_contract()
   TEST_ASSERT_EQUAL_STRING("BigRobotArm::INVALID-COMMAND", invalidCommandResponseMessage());
 }
 
+void test_motion_queue_enqueues_and_dequeues_positions_in_order()
+{
+  MotionQueue queue;
+  JointPositions first{1, 2, 3, 4, 5, 6};
+  JointPositions second{7, 8, 9, 10, 11, 12};
+  JointPositions dequeued{};
+
+  TEST_ASSERT_TRUE(queue.enqueue(first));
+  TEST_ASSERT_TRUE(queue.enqueue(second));
+  TEST_ASSERT_EQUAL_UINT8(2, queue.size());
+
+  TEST_ASSERT_TRUE(queue.dequeue(dequeued));
+  TEST_ASSERT_EQUAL_INT32(1, dequeued.base);
+  TEST_ASSERT_EQUAL_INT32(6, dequeued.gripper);
+
+  TEST_ASSERT_TRUE(queue.dequeue(dequeued));
+  TEST_ASSERT_EQUAL_INT32(7, dequeued.base);
+  TEST_ASSERT_EQUAL_INT32(12, dequeued.gripper);
+  TEST_ASSERT_TRUE(queue.isEmpty());
+}
+
+void test_motion_queue_rejects_enqueue_when_full()
+{
+  MotionQueue queue;
+  JointPositions target{1, 2, 3, 4, 5, 6};
+
+  for (uint8_t i = 0; i < MOTION_QUEUE_CAPACITY; i++)
+  {
+    TEST_ASSERT_TRUE(queue.enqueue(target));
+  }
+
+  TEST_ASSERT_TRUE(queue.isFull());
+  TEST_ASSERT_FALSE(queue.enqueue(target));
+}
+
+void test_motion_queue_returns_false_when_empty()
+{
+  MotionQueue queue;
+  JointPositions target{};
+
+  TEST_ASSERT_FALSE(queue.dequeue(target));
+}
+
 int main(int argc, char** argv)
 {
   UNITY_BEGIN();
@@ -194,6 +238,9 @@ int main(int argc, char** argv)
   RUN_TEST(test_should_queue_command_in_active_sequence_reflects_sequence_state);
   RUN_TEST(test_ready_response_message_matches_ui_contract);
   RUN_TEST(test_invalid_command_response_message_matches_ui_contract);
+  RUN_TEST(test_motion_queue_enqueues_and_dequeues_positions_in_order);
+  RUN_TEST(test_motion_queue_rejects_enqueue_when_full);
+  RUN_TEST(test_motion_queue_returns_false_when_empty);
 
   return UNITY_END();
 }

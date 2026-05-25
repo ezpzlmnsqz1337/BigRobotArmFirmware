@@ -2,6 +2,7 @@
 #define ARM_BUILDER_H
 
 #include "Gripper.h"
+#include "MotionQueue.h"
 #include "MultiStepper.h"
 #include "RobotArmJoint.h"
 #include "Structures.h"
@@ -16,11 +17,15 @@ private:
   RobotArmJoint mWrist;
   Gripper mGripper;
   MultiStepper mMultiStepper;
+  MotionQueue mMotionQueue;
+  JointPositions mActiveMotionTarget{};
+  bool mMotionActive = false;
 
 protected:
   long getNormalizedValue(const long value);
   float calculateTimeToPosition(const long position, const long target, const float speed);
   float findMaxInArray(const float* array, const int32_t size);
+  void startMotion(const JointPositions& jp);
 
   float mSpeedMultiplier = 1;
   float mAccelerationMultiplier = 1;
@@ -35,6 +40,9 @@ public:
   void goTo(const JointPositions& jp);
   void goToSyncMultiStepper(const JointPositions& jp);
   void goToSync(const JointPositions& jp);
+  bool queueMove(const JointPositions& jp);
+  void serviceMotion();
+  bool isMotionActive();
   void move(const JointPositions& jp);
 
   void setSpeed(const float speed);

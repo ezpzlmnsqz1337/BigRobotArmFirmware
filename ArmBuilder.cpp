@@ -15,6 +15,29 @@ ArmBuilder::ArmBuilder()
 {
 }
 
+void ArmBuilder::startMotion(const JointPositions& jp)
+{
+  mActiveMotionTarget = jp;
+
+  if (mSyncMotors)
+  {
+    long position[]{jp.base, jp.shoulder, jp.elbow, jp.wristRotate, jp.wrist};
+    mGripper.getServo().setTargetPosition(jp.gripper);
+    mMultiStepper.moveTo(position);
+  }
+  else
+  {
+    mBase.getMotor().moveTo(jp.base);
+    mShoulder.getMotor().moveTo(jp.shoulder);
+    mElbow.getMotor().moveTo(jp.elbow);
+    mWristRotate.getMotor().moveTo(jp.wristRotate);
+    mWrist.getMotor().moveTo(jp.wrist);
+    mGripper.getServo().setTargetPosition(jp.gripper);
+  }
+
+  mMotionActive = true;
+}
+
 void ArmBuilder::init()
 {
   mBase.init(M1_STEP, M1_DIR, M1_ENABLE, Config::M1_STEPS_PER_REVOLUTION, MICRO_16);
@@ -77,20 +100,41 @@ void ArmBuilder::setZeroPosition()
 
 void ArmBuilder::goTo(const JointPositions& jp)
 {
+  startMotion(jp);
+  while (isMotionActive())
+  {
+    serviceMotion();
+  }
+}
+
+bool ArmBuilder::queueMove(const JointPositions& jp)
+{
+  return mMotionQueue.enqueue(jp);
+}
+
+void ArmBuilder::serviceMotion()
+{
+  if (!mMotionActive)
+  {
+    JointPositions nextTarget;
+    if (!mMotionQueue.dequeue(nextTarget))
+    {
+      return;
+    }
+
+    startMotion(nextTarget);
+  }
+
   if (mSyncMotors)
   {
-    goToSyncMultiStepper(jp);
-    // goToSync(jp);
-    return;
+    const bool syncMoving = mMultiStepper.run();
+    mGripper.getServo().loop();
+    if (!(syncMoving || mGripper.getServo().getPosition() != mActiveMotionTarget.gripper))
+    {
+      mMotionActive = false;
+    }
   }
-  mBase.getMotor().moveTo(jp.base);
-  mShoulder.getMotor().moveTo(jp.shoulder);
-  mElbow.getMotor().moveTo(jp.elbow);
-  mWristRotate.getMotor().moveTo(jp.wristRotate);
-  mWrist.getMotor().moveTo(jp.wrist);
-  mGripper.getServo().setTargetPosition(jp.gripper);
-
-  while (!reachedPositions(jp))
+  else
   {
     mBase.getMotor().run();
     mShoulder.getMotor().run();
@@ -98,7 +142,26 @@ void ArmBuilder::goTo(const JointPositions& jp)
     mWristRotate.getMotor().run();
     mWrist.getMotor().run();
     mGripper.getServo().loop();
+
+    if (reachedPositions(mActiveMotionTarget))
+    {
+      mMotionActive = false;
+    }
   }
+
+  if (!mMotionActive)
+  {
+    JointPositions nextTarget;
+    if (mMotionQueue.dequeue(nextTarget))
+    {
+      startMotion(nextTarget);
+    }
+  }
+}
+
+bool ArmBuilder::isMotionActive()
+{
+  return mMotionActive;
 }
 
 void ArmBuilder::goToSyncMultiStepper(const JointPositions& jp)
