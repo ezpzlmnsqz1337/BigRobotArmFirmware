@@ -1,9 +1,29 @@
 #include "MyServo.h"
 #include "Arduino.h"
 
+namespace
+{
+int32_t clampToRange(const int32_t value, const int32_t minimum, const int32_t maximum)
+{
+  if (value < minimum)
+  {
+    return minimum;
+  }
+
+  if (value > maximum)
+  {
+    return maximum;
+  }
+
+  return value;
+}
+} // namespace
+
 MyServo::MyServo(int32_t _servoPin, int32_t _minimum, int32_t _maximum, int32_t _pos)
   : minimum(_minimum), maximum(_maximum), pos(_pos), servoPin(_servoPin), targetPosition(_pos)
 {
+  pos = clampToRange(pos, minimum, maximum);
+  targetPosition = pos;
 }
 
 void MyServo::init()
@@ -35,7 +55,7 @@ int32_t MyServo::getPosition()
 
 void MyServo::setTargetPosition(const int32_t target)
 {
-  targetPosition = target;
+  targetPosition = clampToRange(target, minimum, maximum);
 }
 
 void MyServo::moveBy(int32_t value)
@@ -68,6 +88,12 @@ void MyServo::moveTo(int32_t value)
 
 void MyServo::loop()
 {
+  // never drive a detached servo
+  if (!servo.attached())
+  {
+    return;
+  }
+
   // if already there, return
   if (pos == targetPosition)
   {

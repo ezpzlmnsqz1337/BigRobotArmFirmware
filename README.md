@@ -40,9 +40,12 @@ Upload can be done directly with PlatformIO on Linux or Raspberry Pi by specifyi
 Examples:
 
 ```bash
+pio device list
 pio run
-pio run -t upload --upload-port /dev/ttyUSB1
+pio run -t upload --upload-port /dev/ttyACM0
 ```
+
+The port varies by board and USB adapter (`/dev/ttyACM0` for many ATmega2560 boards, `/dev/ttyUSB0` for common CH340 clones). Use the port reported by `pio device list`.
 
 ## PlatformIO
 
@@ -70,7 +73,8 @@ pio test -e native
 Upload with PlatformIO:
 
 ```bash
-pio run -t upload --upload-port /dev/ttyUSB1
+pio device list
+pio run -t upload --upload-port /dev/ttyACM0
 ```
 
 The native test environment currently exercises pure helper code without pulling in Arduino runtime dependencies.
@@ -89,21 +93,27 @@ The native test environment currently exercises pure helper code without pulling
 
 ## Speed
 - `M203 Ba Sb Ec WRd We` where *a,b,c,d,e* are speed multipliers for each motor
-- speed multiplier can be set from 1 to 300
+- speed multiplier can be set from 1 to 500
 - by default each motor has speed multiplier 100
 - the given value is divided by 100, so that 100 multiplier is actually 1 (this is done to avoid sending floats over Serial, probably unnecessary)
 
 ## Accel
 - `M201 Ba Sb Ec WRd We` where *a,b,c,d,e* are acceleration multipliers for each motor
-- acceleration multiplier can be set from 1 to 300
+- acceleration multiplier can be set from 1 to 500
 - by default each motor has acceleration multiplier 100
 - the given value is divided by 100, so that 100 multiplier is actually 1 (this is done to avoid sending floats over Serial, probably unnecessary)
 
 ## Gripper
-- `G1 Ex Py` where *x* can be 0 to disable gripper, 1 to enable gripper and *y* is in range from 0 to 180 for servo position
+- `G1 Ex Py` where *x* can be 0 to disable gripper, 1 to enable gripper and *y* is the servo position, clamped to the mechanical range 40 to 150
+
+## Queue
+- `Q0 Ba Sb Ec WRd We` enqueues an absolute move and responds with `BigRobotArm::QUEUED-TO` and the target position, or `BigRobotArm::QUEUE-FULL` when the queue is full
+- `QFLUSH` runs all queued moves to completion and responds with `BigRobotArm::QUEUE-DRAINED`
+- `QCLEAR` discards all queued moves and responds with `BigRobotArm::QUEUE-CLEARED`
 
 ## Sync motors
-- `Sx` where *x* can be 0 to not synchronize motor movement or 1 to synchronize motor movement
+- `S0` or `S1` where 0 does not synchronize motor movement and 1 synchronizes motor movement
+- only the exact tokens `S0` and `S1` are accepted
 - when sychronized, the motors arrive at the destination at the same time
 
 ## Status
@@ -111,7 +121,7 @@ The native test environment currently exercises pure helper code without pulling
 
 ## Composite command (sequences)
 # Begin
-- `BEGIN Ix` after this command any command sent will be added to buffer to be executed when #End command is received. *x* is number of repetitions of the sequence.
+- `BEGIN Ix` after this command any command sent will be added to buffer to be executed when #End command is received. *x* is number of repetitions of the sequence, from 1 to 20. A second `BEGIN` before `END` is rejected.
 
 # End
 - `END` starts execution of commands in buffer for number of iterations set after the #Begin command.
@@ -124,8 +134,21 @@ The native test environment currently exercises pure helper code without pulling
 
 
 Response:
-- BigRobotArm::POSITION: `Ba Sb Ec WRd We` - where *a,b,c,d,e* are current motor step positions
+- BigRobotArm::READY - command finished, ready for the next command
+- BigRobotArm::INVALID-COMMAND - malformed or unsupported command; nothing was executed
+- BigRobotArm::MOVING-TO - followed by a POSITION line for a move command
+- BigRobotArm::POSITION: `Ba Sb Ec WRd We` - where *a,b,c,d,e* are the last commanded target step positions
 - BigRobotArm::GRIPPER: `Ex Py`- where *x* specifies if gripper is enabled (1) or disabled (0) and *y* specifies servo position
 - BigRobotArm::SPEED: `Ba Sb Ec WRd We` where *a,b,c,d,e* are speed multipliers for each motor
 - BigRobotArm::ACCELERATION: `Ba Sb Ec WRd We` where *a,b,c,d,e* are acceleration multipliers for each motor
 - BigRobotArm::SYNC-MOTORS: `x` where *x* spceifies if motor movement is synced (1) or not (0)
+- BigRobotArm::QUEUED-TO - followed by a POSITION line for a queued move
+- BigRobotArm::QUEUE-FULL - the motion queue rejected the move
+- BigRobotArm::QUEUE-DRAINED - `QFLUSH` finished all queued moves
+- BigRobotArm::QUEUE-CLEARED - `QCLEAR` discarded the queued moves
+
+Commands are terminated by `\r`, `\n`, or `\r\n`. A line longer than 50 characters is rejected with `BigRobotArm::INVALID-COMMAND` instead of executing its truncated prefix.
+
+## Legacy reference
+
+`Example.XYZ` is an unbuilt historical Arduino sketch kept for reference only. It is not part of the PlatformIO build.

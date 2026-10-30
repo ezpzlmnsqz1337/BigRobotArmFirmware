@@ -1,5 +1,6 @@
 #include "SyncMotorsCommand.h"
 #include "Arduino.h"
+#include <string.h>
 
 SyncMotorsCommand::SyncMotorsCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder), mSyncMotors(0)
 {
@@ -11,8 +12,14 @@ SyncMotorsCommand::~SyncMotorsCommand()
 
 void SyncMotorsCommand::parse(char* cCommand)
 {
-  strtok(cCommand, " ");
-  mSyncMotors = atoi(&cCommand[1]);
+  char* token = strtok(cCommand, " ");
+  if (token == nullptr || (strcmp(token, "S0") != 0 && strcmp(token, "S1") != 0))
+  {
+    isValid = false;
+    return;
+  }
+
+  mSyncMotors = token[1] - '0';
 }
 
 void SyncMotorsCommand::execute()

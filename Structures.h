@@ -1,6 +1,8 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
 
+#include <stdint.h>
+
 struct Inputs
 {
   int32_t leftX;

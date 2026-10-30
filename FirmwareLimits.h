@@ -4,5 +4,6 @@
 #include <stdint.h>
 
 int32_t clampConfiguredValue(int32_t value, long minValue, long maxValue);
+int32_t clampGripperPosition(int32_t value);
 
 #endif

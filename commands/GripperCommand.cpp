@@ -1,5 +1,7 @@
 #include "GripperCommand.h"
 #include "Arduino.h"
+#include "CommandInputRules.h"
+#include "FirmwareLimits.h"
 
 GripperCommand::GripperCommand(ArmBuilder* armBuilder) : AbstractCommand(armBuilder), mEnabled(0), mPosition(0)
 {
@@ -15,8 +17,28 @@ void GripperCommand::parse(char* cCommand)
   // G1 - handle gripper
   char* e = strtok(NULL, " ");
   char* p = strtok(NULL, " ");
-  mEnabled = e != NULL ? atoi(&e[1]) : 0;
-  mPosition = p != NULL ? atoi(&p[1]) : 0;
+
+  if (e != nullptr)
+  {
+    int32_t enabled = 0;
+    if (!parsePrefixedInt32(e, "E", &enabled) || (enabled != 0 && enabled != 1))
+    {
+      isValid = false;
+      return;
+    }
+    mEnabled = static_cast<int8_t>(enabled);
+  }
+
+  if (p != nullptr)
+  {
+    int32_t position = 0;
+    if (!parsePrefixedInt32(p, "P", &position))
+    {
+      isValid = false;
+      return;
+    }
+    mPosition = clampGripperPosition(position);
+  }
 }
 
 void GripperCommand::execute()

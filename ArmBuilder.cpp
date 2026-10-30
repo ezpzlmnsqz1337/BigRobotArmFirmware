@@ -9,6 +9,13 @@ float clampMultiplier(const int32_t value, const long minValue, const long maxVa
 {
   return static_cast<float>(clampConfiguredValue(value, minValue, maxValue)) / 100;
 }
+
+JointPositions clampJointPositions(const JointPositions& jp)
+{
+  JointPositions clamped = jp;
+  clamped.gripper = clampGripperPosition(jp.gripper);
+  return clamped;
+}
 } // namespace
 
 ArmBuilder::ArmBuilder()
@@ -17,22 +24,23 @@ ArmBuilder::ArmBuilder()
 
 void ArmBuilder::startMotion(const JointPositions& jp)
 {
-  mActiveMotionTarget = jp;
+  const JointPositions target = clampJointPositions(jp);
+  mActiveMotionTarget = target;
 
   if (mSyncMotors)
   {
-    long position[]{jp.base, jp.shoulder, jp.elbow, jp.wristRotate, jp.wrist};
-    mGripper.getServo().setTargetPosition(jp.gripper);
+    long position[]{target.base, target.shoulder, target.elbow, target.wristRotate, target.wrist};
+    mGripper.getServo().setTargetPosition(target.gripper);
     mMultiStepper.moveTo(position);
   }
   else
   {
-    mBase.getMotor().moveTo(jp.base);
-    mShoulder.getMotor().moveTo(jp.shoulder);
-    mElbow.getMotor().moveTo(jp.elbow);
-    mWristRotate.getMotor().moveTo(jp.wristRotate);
-    mWrist.getMotor().moveTo(jp.wrist);
-    mGripper.getServo().setTargetPosition(jp.gripper);
+    mBase.getMotor().moveTo(target.base);
+    mShoulder.getMotor().moveTo(target.shoulder);
+    mElbow.getMotor().moveTo(target.elbow);
+    mWristRotate.getMotor().moveTo(target.wristRotate);
+    mWrist.getMotor().moveTo(target.wrist);
+    mGripper.getServo().setTargetPosition(target.gripper);
   }
 
   mMotionActive = true;
@@ -115,7 +123,7 @@ bool ArmBuilder::queueMove(const JointPositions& jp)
     return true;
   }
 
-  return mMotionQueue.enqueue(jp);
+  return mMotionQueue.enqueue(clampJointPositions(jp));
 }
 
 void ArmBuilder::serviceMotion()
@@ -195,11 +203,12 @@ void ArmBuilder::clearMotionQueue()
 
 void ArmBuilder::goToSyncMultiStepper(const JointPositions& jp)
 {
-  long position[]{jp.base, jp.shoulder, jp.elbow, jp.wristRotate, jp.wrist};
-  mGripper.getServo().setTargetPosition(jp.gripper);
+  const JointPositions target = clampJointPositions(jp);
+  long position[]{target.base, target.shoulder, target.elbow, target.wristRotate, target.wrist};
+  mGripper.getServo().setTargetPosition(target.gripper);
   mMultiStepper.moveTo(position);
 
-  while (mMultiStepper.run() || mGripper.getServo().getPosition() != jp.gripper)
+  while (mMultiStepper.run() || mGripper.getServo().getPosition() != target.gripper)
   {
     mGripper.getServo().loop();
   }
@@ -207,6 +216,7 @@ void ArmBuilder::goToSyncMultiStepper(const JointPositions& jp)
 
 void ArmBuilder::goToSync(const JointPositions& jp)
 {
+  const JointPositions target = clampJointPositions(jp);
   AccelStepper& b = mBase.getMotor();
   AccelStepper& s = mShoulder.getMotor();
   AccelStepper& e = mElbow.getMotor();
@@ -214,21 +224,21 @@ void ArmBuilder::goToSync(const JointPositions& jp)
   AccelStepper& w = mWrist.getMotor();
 
   // set target positions
-  b.moveTo(jp.base);
-  s.moveTo(jp.shoulder);
-  e.moveTo(jp.elbow);
-  wr.moveTo(jp.wristRotate);
-  w.moveTo(jp.wrist);
-  mGripper.getServo().setTargetPosition(jp.gripper);
+  b.moveTo(target.base);
+  s.moveTo(target.shoulder);
+  e.moveTo(target.elbow);
+  wr.moveTo(target.wristRotate);
+  w.moveTo(target.wrist);
+  mGripper.getServo().setTargetPosition(target.gripper);
 
   // store old max speed to set it back after the movement
   float oldSpeed[5]{b.maxSpeed(), s.maxSpeed(), e.maxSpeed(), wr.maxSpeed(), w.maxSpeed()};
   // calculate how long it takes for each motor to get to target position
-  float timeToPos[5]{calculateTimeToPosition(b.currentPosition(), jp.base, b.maxSpeed()),
-                     calculateTimeToPosition(s.currentPosition(), jp.shoulder, s.maxSpeed()),
-                     calculateTimeToPosition(e.currentPosition(), jp.elbow, e.maxSpeed()),
-                     calculateTimeToPosition(wr.currentPosition(), jp.wristRotate, wr.maxSpeed()),
-                     calculateTimeToPosition(w.currentPosition(), jp.wrist, w.maxSpeed())};
+  float timeToPos[5]{calculateTimeToPosition(b.currentPosition(), target.base, b.maxSpeed()),
+                     calculateTimeToPosition(s.currentPosition(), target.shoulder, s.maxSpeed()),
+                     calculateTimeToPosition(e.currentPosition(), target.elbow, e.maxSpeed()),
+                     calculateTimeToPosition(wr.currentPosition(), target.wristRotate, wr.maxSpeed()),
+                     calculateTimeToPosition(w.currentPosition(), target.wrist, w.maxSpeed())};
 
   // find slowest time
   float maxTime = findMaxInArray(timeToPos, 5);
@@ -238,7 +248,7 @@ void ArmBuilder::goToSync(const JointPositions& jp)
   }
 
   // for each motor set new max speed according to formula:
-  // (slowest time / this motor time) * (1 / this motor max speed)
+  // (this motor time / slowest time) * current motor max speed
   if (timeToPos[0] > 0)
   {
     b.setMaxSpeed((timeToPos[0] / maxTime) * b.maxSpeed());
@@ -260,7 +270,7 @@ void ArmBuilder::goToSync(const JointPositions& jp)
     w.setMaxSpeed((timeToPos[4] / maxTime) * w.maxSpeed());
   }
 
-  while (!reachedPositions(jp))
+  while (!reachedPositions(target))
   {
     b.run();
     s.run();
@@ -349,6 +359,12 @@ float ArmBuilder::findMaxInArray(const float* array, const int32_t size)
 
 float ArmBuilder::calculateTimeToPosition(const long position, const long target, const float speed)
 {
+  if (speed <= 0)
+  {
+    // A non-positive max speed would divide by zero; report "no time" so callers skip it.
+    return 0;
+  }
+
   return abs(position - target) / speed;
 }
 
@@ -383,6 +399,7 @@ long ArmBuilder::getNormalizedValue(const long value)
 
 JointPositions ArmBuilder::getPositions()
 {
+  // Last commanded target positions; the live step counters are exposed by the motors.
   return {mBase.getMotor().targetPosition(),  mShoulder.getMotor().targetPosition(),
           mElbow.getMotor().targetPosition(), mWristRotate.getMotor().targetPosition(),
           mWrist.getMotor().targetPosition(), mGripper.getServo().getPosition()};

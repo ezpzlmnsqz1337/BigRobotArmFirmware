@@ -15,6 +15,10 @@ static const long MAX_SPEED_MULTIPLIER = 500;
 
 static const long MIN_ACCEL_MULTIPLIER = 1;
 static const long MAX_ACCEL_MULTIPLIER = 500;
+
+// Mechanical limits of the gripper servo.
+static const long MIN_GRIPPER_POSITION = 40;
+static const long MAX_GRIPPER_POSITION = 150;
 } // namespace Config
 
 enum Microstepping

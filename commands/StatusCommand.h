@@ -17,15 +17,13 @@
 
 class StatusCommand : public AbstractCommand
 {
-  PositionCommand* mPositionCommand;
-  SpeedCommand* mSpeedCommand;
-  AccelerationCommand* mAccelerationCommand;
-  SyncMotorsCommand* mSyncMotorsCommand;
+  PositionCommand mPositionCommand;
+  SpeedCommand mSpeedCommand;
+  AccelerationCommand mAccelerationCommand;
+  SyncMotorsCommand mSyncMotorsCommand;
 
 public:
   explicit StatusCommand(ArmBuilder* armBuilder);
-  StatusCommand(const StatusCommand& sc);
-  ~StatusCommand();
   void execute() override;
   void printResponse() override;
 };

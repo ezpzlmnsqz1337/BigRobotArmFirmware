@@ -3,6 +3,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+namespace
+{
+bool parseNumericSuffix(const char* command, long& value)
+{
+  const char* digits = command + 1;
+  if (*digits == 0)
+  {
+    return false;
+  }
+
+  for (const char* cursor = digits; *cursor != 0; cursor++)
+  {
+    if (*cursor < '0' || *cursor > '9')
+    {
+      return false;
+    }
+  }
+
+  char* end = nullptr;
+  const long parsed = strtol(digits, &end, 10);
+  if (end == digits || *end != 0)
+  {
+    return false;
+  }
+
+  value = parsed;
+  return true;
+}
+} // namespace
+
 CommandDispatchKind classifyCommandToken(const char* command)
 {
   if (command == nullptr || command[0] == 0)
@@ -35,14 +65,20 @@ CommandDispatchKind classifyCommandToken(const char* command)
     return COMMAND_DISPATCH_Q0;
   }
 
-  if (command[0] == 'S')
+  if (strcmp(command, "S0") == 0 || strcmp(command, "S1") == 0)
   {
     return COMMAND_DISPATCH_SYNC;
   }
 
   if (command[0] == 'G')
   {
-    switch (atoi(&command[1]))
+    long value = 0;
+    if (!parseNumericSuffix(command, value))
+    {
+      return COMMAND_DISPATCH_INVALID;
+    }
+
+    switch (value)
     {
     case 0:
       return COMMAND_DISPATCH_G0;
@@ -59,7 +95,13 @@ CommandDispatchKind classifyCommandToken(const char* command)
 
   if (command[0] == 'M')
   {
-    switch (atoi(&command[1]))
+    long value = 0;
+    if (!parseNumericSuffix(command, value))
+    {
+      return COMMAND_DISPATCH_INVALID;
+    }
+
+    switch (value)
     {
     case 201:
       return COMMAND_DISPATCH_M201;

@@ -1,9 +1,10 @@
 #include "Gripper.h"
 
-const int32_t minPos = 40;
-const int32_t maxPos = 150;
+#include "Config.h"
 
-Gripper::Gripper() : mServo(3, minPos, maxPos, 90)
+Gripper::Gripper()
+  : mServo(3, static_cast<int32_t>(Config::MIN_GRIPPER_POSITION),
+           static_cast<int32_t>(Config::MAX_GRIPPER_POSITION), 90)
 {
 }
 
@@ -14,12 +15,12 @@ void Gripper::init()
 
 void Gripper::open()
 {
-  mServo.moveTo(minPos);
+  mServo.moveTo(static_cast<int32_t>(Config::MIN_GRIPPER_POSITION));
 }
 
 void Gripper::close()
 {
-  mServo.moveTo(maxPos);
+  mServo.moveTo(static_cast<int32_t>(Config::MAX_GRIPPER_POSITION));
 }
 
 MyServo& Gripper::getServo()

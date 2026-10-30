@@ -12,3 +12,8 @@ AbstractCommand::~AbstractCommand()
 void AbstractCommand::parse(char* cCommand)
 {
 }
+
+bool AbstractCommand::isValidCommand() const
+{
+  return isValid;
+}

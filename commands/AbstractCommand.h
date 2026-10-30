@@ -19,6 +19,8 @@ public:
   virtual void parse(char* cCommand);
   virtual void execute() = 0;
   virtual void printResponse() = 0;
+
+  bool isValidCommand() const;
 };
 
 // This is the end of the header guard

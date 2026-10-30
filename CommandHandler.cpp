@@ -2,6 +2,7 @@
 #include "CommandDispatchRules.h"
 #include "CommandInputRules.h"
 #include "CommandResponseRules.h"
+#include "JointCommandRules.h"
 #include "SequenceLifecycleRules.h"
 #include "AbstractCommand.h"
 #include "AccelerationCommand.h"
@@ -9,36 +10,24 @@
 #include "Config.h"
 #include "GripperCommand.h"
 #include "HomeCommand.h"
-#include "MemoryFree.h"
 #include "PositionCommand.h"
 #include "ResetPositionCommand.h"
 #include "SpeedCommand.h"
 #include "StatusCommand.h"
 #include "SyncMotorsCommand.h"
 
+#include <string.h>
+
 namespace
 {
-JointPositions parsePositionTarget(const char* rawCommand, ArmBuilder* armBuilder)
+bool parsePositionTarget(const char* rawCommand, ArmBuilder* armBuilder, JointPositions& jp)
 {
   char commandCopy[COMMAND_BUFFER_CAPACITY];
   strncpy(commandCopy, rawCommand, COMMAND_BUFFER_CAPACITY - 1);
   commandCopy[COMMAND_BUFFER_CAPACITY - 1] = 0;
 
-  strtok(commandCopy, " ");
-  char* base = strtok(NULL, " ");
-  char* shoulder = strtok(NULL, " ");
-  char* elbow = strtok(NULL, " ");
-  char* wristRotate = strtok(NULL, " ");
-  char* wrist = strtok(NULL, " ");
-
-  JointPositions jp = armBuilder->getPositions();
-  jp.base = base != NULL ? atol(&base[1]) : jp.base;
-  jp.shoulder = shoulder != NULL ? atol(&shoulder[1]) : jp.shoulder;
-  jp.elbow = elbow != NULL ? atol(&elbow[1]) : jp.elbow;
-  jp.wristRotate = wristRotate != NULL ? atol(&wristRotate[2]) : jp.wristRotate;
-  jp.wrist = wrist != NULL ? atol(&wrist[1]) : jp.wrist;
-
-  return jp;
+  jp = armBuilder->getPositions();
+  return parseJointPositionsCommand(commandCopy, jp);
 }
 
 void printPositionResponse(const char* header, const JointPositions& jp)
@@ -58,9 +47,9 @@ void printPositionResponse(const char* header, const JointPositions& jp)
 }
 } // namespace
 
-CommandHandler::CommandHandler() : mArmBuilder(nullptr), buffer(""), original(""), mSequence(nullptr)
+CommandHandler::CommandHandler() : mArmBuilder(nullptr), mSequence(nullptr)
 {
-  sofar = 0;
+  reset();
 }
 
 void CommandHandler::init(ArmBuilder& armBuilder)
@@ -74,29 +63,32 @@ void CommandHandler::handle()
 {
   while (Serial.available() > 0)
   {
-    char c = Serial.read();
-    if (c == 13)
+    const CommandInputResult inputResult = pushCommandInputByte(mInput, static_cast<char>(Serial.read()));
+    if (inputResult == COMMAND_INPUT_NONE)
     {
-      // if enter, command is complete
-      buffer[sofar] = 0;
-      strcpy(original, buffer);
-      char* command = strtok(buffer, " ");
-      if (hasProcessableCommandToken(command))
-      {
-        processCommand(command);
-      }
-      else
-      {
-        printInvalidCommandResponse();
-        printReadyResponse();
-      }
-      reset();
-      return;
+      continue;
     }
-    if (canAppendCommandByte(sofar, BUFFER_SIZE))
+
+    if (inputResult == COMMAND_INPUT_INVALID)
     {
-      // if space in buffer, add char to buffer
-      buffer[sofar++] = c;
+      // Over-length line: never execute the truncated prefix.
+      printInvalidCommandResponse();
+      printReadyResponse();
+      continue;
+    }
+
+    strncpy(original, mInput.data, COMMAND_BUFFER_CAPACITY - 1);
+    original[COMMAND_BUFFER_CAPACITY - 1] = 0;
+
+    char* command = strtok(mInput.data, " ");
+    if (hasProcessableCommandToken(command))
+    {
+      processCommand(command);
+    }
+    else
+    {
+      printInvalidCommandResponse();
+      printReadyResponse();
     }
   }
 }
@@ -113,10 +105,6 @@ void CommandHandler::processCommand(char* command)
 
   AbstractCommand* pCommand = nullptr;
   bool valid = false;
-  Serial.print("Free mem: ");
-  Serial.println(freeMemory());
-  Serial.print("Process command: ");
-  Serial.println(original);
 
   if (commandKind == COMMAND_DISPATCH_G0)
   {
@@ -124,16 +112,19 @@ void CommandHandler::processCommand(char* command)
   }
   else if (commandKind == COMMAND_DISPATCH_Q0)
   {
-    const JointPositions jp = parsePositionTarget(original, mArmBuilder);
-    if (mArmBuilder->queueMove(jp))
+    JointPositions jp;
+    if (parsePositionTarget(original, mArmBuilder, jp))
     {
-      printPositionResponse("BigRobotArm::QUEUED-TO", jp);
+      if (mArmBuilder->queueMove(jp))
+      {
+        printPositionResponse("BigRobotArm::QUEUED-TO", jp);
+      }
+      else
+      {
+        Serial.println("BigRobotArm::QUEUE-FULL");
+      }
+      valid = true;
     }
-    else
-    {
-      Serial.println("BigRobotArm::QUEUE-FULL");
-    }
-    valid = true;
   }
   else if (commandKind == COMMAND_DISPATCH_QFLUSH)
   {
@@ -177,13 +168,27 @@ void CommandHandler::processCommand(char* command)
   }
   else if (commandKind == COMMAND_DISPATCH_BEGIN) // start of sequence of commands
   {
-    mSequence = new CompositeCommand(mArmBuilder);
-    mSequence->parse(original);
-    valid = true;
+    if (canStartSequence(mSequence != nullptr))
+    {
+      mSequence = new CompositeCommand(mArmBuilder);
+      if (mSequence != nullptr)
+      {
+        mSequence->parse(original);
+        if (mSequence->isValidCommand())
+        {
+          valid = true;
+        }
+        else
+        {
+          delete mSequence;
+          mSequence = nullptr;
+        }
+      }
+    }
   }
   else if (commandKind == COMMAND_DISPATCH_END) // end of sequence of commands
   {
-    if (canExecuteSequenceOnDispatch(commandKind, mSequence != nullptr))
+    if (mSequence != nullptr && canExecuteSequenceOnDispatch(commandKind, true))
     {
       mSequence->execute();
       mSequence->printResponse();
@@ -198,8 +203,13 @@ void CommandHandler::processCommand(char* command)
   {
     // init command by parsing the string data
     pCommand->parse(original);
+    if (!pCommand->isValidCommand())
+    {
+      delete pCommand;
+      valid = false;
+    }
     // if we have sequence
-    if (shouldQueueCommandInActiveSequence(mSequence != nullptr))
+    else if (shouldQueueCommandInActiveSequence(mSequence != nullptr))
     {
       // if we are now in a sequence, add command to the queue
       if (mSequence->addCommandToSequence(pCommand))
@@ -240,10 +250,10 @@ void CommandHandler::printInvalidCommandResponse()
 
 void CommandHandler::reset()
 {
-  sofar = 0; // clear input buffer
+  resetCommandInput(mInput); // clear input buffer
+
   for (int i = 0; i < COMMAND_BUFFER_CAPACITY; i++)
   {
-    buffer[i] = 0;
     original[i] = 0;
   }
 }

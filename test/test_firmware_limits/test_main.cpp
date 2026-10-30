@@ -5,6 +5,7 @@
 #include "CommandResponseRules.h"
 #include "Config.h"
 #include "FirmwareLimits.h"
+#include "JointCommandRules.h"
 #include "MotionQueue.h"
 #include "SequenceLifecycleRules.h"
 #include "SequenceCommandRules.h"
@@ -48,7 +49,31 @@ void test_parse_sequence_repetitions_reads_iteration_token()
 void test_parse_sequence_repetitions_defaults_to_one_for_unexpected_prefix()
 {
   char repetitionsToken[] = "X5";
-  TEST_ASSERT_EQUAL_INT8(1, parseSequenceRepetitions(repetitionsToken));
+  TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(repetitionsToken));
+}
+
+void test_parse_sequence_repetitions_rejects_out_of_range_and_malformed_values()
+{
+  char zeroToken[] = "I0";
+  char negativeToken[] = "I-5";
+  char tooManyToken[] = "I21";
+  char wrappedToken[] = "I257";
+  char textToken[] = "Iabc";
+
+  TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(zeroToken));
+  TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(negativeToken));
+  TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(tooManyToken));
+  TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(wrappedToken));
+  TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(textToken));
+}
+
+void test_parse_sequence_repetitions_accepts_inclusive_bounds()
+{
+  char oneToken[] = "I1";
+  char maxToken[] = "I20";
+
+  TEST_ASSERT_EQUAL_INT8(1, parseSequenceRepetitions(oneToken));
+  TEST_ASSERT_EQUAL_INT8(MAX_SEQUENCE_COMMANDS, parseSequenceRepetitions(maxToken));
 }
 
 void test_can_add_sequence_command_allows_values_below_capacity()
@@ -109,6 +134,58 @@ void test_classify_command_token_recognizes_sequence_and_sync_commands()
   TEST_ASSERT_EQUAL(COMMAND_DISPATCH_QCLEAR, classifyCommandToken(clearCommand));
 }
 
+void test_classify_command_token_only_accepts_exact_sync_tokens()
+{
+  char s0Command[] = "S0";
+  char s1Command[] = "S1";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_SYNC, classifyCommandToken(s0Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_SYNC, classifyCommandToken(s1Command));
+}
+
+void test_classify_command_token_rejects_non_sync_s_prefixes()
+{
+  char s2Command[] = "S2";
+  char s10Command[] = "S10";
+  char statusCommand[] = "STATUS";
+  char speedCommand[] = "SPEED";
+  char bareSCommand[] = "S";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(s2Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(s10Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(statusCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(speedCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(bareSCommand));
+}
+
+void test_classify_command_token_rejects_malformed_numeric_suffixes()
+{
+  char bareGCommand[] = "G";
+  char bareMCommand[] = "M";
+  char garbageGCommand[] = "Gabc";
+  char mixedGCommand[] = "G0x";
+  char negativeGCommand[] = "G-1";
+  char garbageMCommand[] = "M20x";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(bareGCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(bareMCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(garbageGCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(mixedGCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(negativeGCommand));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_INVALID, classifyCommandToken(garbageMCommand));
+}
+
+void test_classify_command_token_accepts_leading_zeroes()
+{
+  char g00Command[] = "G00";
+  char g028Command[] = "G028";
+  char m0203Command[] = "M0203";
+
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G0, classifyCommandToken(g00Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_G28, classifyCommandToken(g028Command));
+  TEST_ASSERT_EQUAL(COMMAND_DISPATCH_M203, classifyCommandToken(m0203Command));
+}
+
 void test_classify_command_token_rejects_unknown_commands()
 {
   char unknownGCommand[] = "G999";
@@ -147,6 +224,137 @@ void test_can_append_command_byte_blocks_length_at_buffer_size()
   TEST_ASSERT_FALSE(canAppendCommandByte(commandBufferSize, commandBufferSize));
 }
 
+void test_command_input_accepts_carriage_return_termination()
+{
+  CommandInputBuffer input;
+  resetCommandInput(input);
+
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, 'G'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '0'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_READY, pushCommandInputByte(input, '\r'));
+  TEST_ASSERT_EQUAL_STRING("G0", input.data);
+}
+
+void test_command_input_accepts_line_feed_termination()
+{
+  CommandInputBuffer input;
+  resetCommandInput(input);
+
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, 'M'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '5'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '0'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '3'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_READY, pushCommandInputByte(input, '\n'));
+  TEST_ASSERT_EQUAL_STRING("M503", input.data);
+}
+
+void test_command_input_accepts_crlf_without_empty_command()
+{
+  CommandInputBuffer input;
+  resetCommandInput(input);
+
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, 'G'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '0'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_READY, pushCommandInputByte(input, '\r'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '\n'));
+  TEST_ASSERT_EQUAL_STRING("G0", input.data);
+}
+
+void test_command_input_rejects_overlength_line_without_executing_prefix()
+{
+  CommandInputBuffer input;
+  resetCommandInput(input);
+
+  for (int i = 0; i < COMMAND_BUFFER_SIZE; i++)
+  {
+    TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, 'A'));
+  }
+
+  // Additional bytes are consumed but never appended.
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, 'B'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_INVALID, pushCommandInputByte(input, '\r'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, 'G'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_NONE, pushCommandInputByte(input, '0'));
+  TEST_ASSERT_EQUAL(COMMAND_INPUT_READY, pushCommandInputByte(input, '\r'));
+  TEST_ASSERT_EQUAL_STRING("G0", input.data);
+}
+
+void test_parse_joint_positions_command_reads_prefixed_values()
+{
+  char command[] = "G0 B10 S-20 E30 WR40 W50";
+  JointPositions positions{1, 2, 3, 4, 5, 6};
+
+  TEST_ASSERT_TRUE(parseJointPositionsCommand(command, positions));
+  TEST_ASSERT_EQUAL_INT32(10, positions.base);
+  TEST_ASSERT_EQUAL_INT32(-20, positions.shoulder);
+  TEST_ASSERT_EQUAL_INT32(30, positions.elbow);
+  TEST_ASSERT_EQUAL_INT32(40, positions.wristRotate);
+  TEST_ASSERT_EQUAL_INT32(50, positions.wrist);
+}
+
+void test_parse_joint_positions_command_keeps_absent_values()
+{
+  char command[] = "G0 B10";
+  JointPositions positions{1, 2, 3, 4, 5, 6};
+
+  TEST_ASSERT_TRUE(parseJointPositionsCommand(command, positions));
+  TEST_ASSERT_EQUAL_INT32(10, positions.base);
+  TEST_ASSERT_EQUAL_INT32(2, positions.shoulder);
+  TEST_ASSERT_EQUAL_INT32(3, positions.elbow);
+  TEST_ASSERT_EQUAL_INT32(4, positions.wristRotate);
+  TEST_ASSERT_EQUAL_INT32(5, positions.wrist);
+}
+
+void test_parse_joint_positions_command_rejects_prefix_only_tokens()
+{
+  char command[] = "G0 B S10 E30 WR40 W50";
+  JointPositions positions{1, 2, 3, 4, 5, 6};
+
+  TEST_ASSERT_FALSE(parseJointPositionsCommand(command, positions));
+}
+
+void test_parse_joint_positions_command_rejects_misread_wrist_rotate_token()
+{
+  char command[] = "G0 B10 S20 E30 W40 W50";
+  JointPositions positions{1, 2, 3, 4, 5, 6};
+
+  TEST_ASSERT_FALSE(parseJointPositionsCommand(command, positions));
+}
+
+void test_parse_joint_speeds_and_accelerations_reject_prefix_only_tokens()
+{
+  char speedCommand[] = "M203 B100 S";
+  char accelerationCommand[] = "M201 B100 WR";
+  JointSpeeds speeds{1, 2, 3, 4, 5};
+  JointAccelerations accelerations{1, 2, 3, 4, 5};
+
+  TEST_ASSERT_FALSE(parseJointSpeedsCommand(speedCommand, speeds));
+  TEST_ASSERT_FALSE(parseJointAccelerationsCommand(accelerationCommand, accelerations));
+}
+
+void test_parse_joint_speeds_and_accelerations_read_prefixed_values()
+{
+  char speedCommand[] = "M203 B100 S200 E300 WR400 W500";
+  char accelerationCommand[] = "M201 B110 S210 E310 WR410 W510";
+  JointSpeeds speeds{};
+  JointAccelerations accelerations{};
+
+  TEST_ASSERT_TRUE(parseJointSpeedsCommand(speedCommand, speeds));
+  TEST_ASSERT_EQUAL_INT32(100, speeds.base);
+  TEST_ASSERT_EQUAL_INT32(500, speeds.wrist);
+
+  TEST_ASSERT_TRUE(parseJointAccelerationsCommand(accelerationCommand, accelerations));
+  TEST_ASSERT_EQUAL_INT32(110, accelerations.base);
+  TEST_ASSERT_EQUAL_INT32(510, accelerations.wrist);
+}
+
+void test_clamp_gripper_position_enforces_mechanical_limits()
+{
+  TEST_ASSERT_EQUAL_INT32(Config::MIN_GRIPPER_POSITION, clampGripperPosition(0));
+  TEST_ASSERT_EQUAL_INT32(90, clampGripperPosition(90));
+  TEST_ASSERT_EQUAL_INT32(Config::MAX_GRIPPER_POSITION, clampGripperPosition(180));
+}
+
 void test_can_execute_sequence_on_dispatch_requires_end_with_active_sequence()
 {
   TEST_ASSERT_TRUE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_END, true));
@@ -157,6 +365,12 @@ void test_can_execute_sequence_on_dispatch_rejects_non_end_commands()
 {
   TEST_ASSERT_FALSE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_BEGIN, true));
   TEST_ASSERT_FALSE(canExecuteSequenceOnDispatch(COMMAND_DISPATCH_G0, true));
+}
+
+void test_can_start_sequence_rejects_nested_begin()
+{
+  TEST_ASSERT_TRUE(canStartSequence(false));
+  TEST_ASSERT_FALSE(canStartSequence(true));
 }
 
 void test_should_queue_command_in_active_sequence_reflects_sequence_state()
@@ -242,19 +456,37 @@ int main(int argc, char** argv)
   RUN_TEST(test_parse_sequence_repetitions_defaults_to_one_without_token);
   RUN_TEST(test_parse_sequence_repetitions_reads_iteration_token);
   RUN_TEST(test_parse_sequence_repetitions_defaults_to_one_for_unexpected_prefix);
+  RUN_TEST(test_parse_sequence_repetitions_rejects_out_of_range_and_malformed_values);
+  RUN_TEST(test_parse_sequence_repetitions_accepts_inclusive_bounds);
   RUN_TEST(test_can_add_sequence_command_allows_values_below_capacity);
   RUN_TEST(test_can_add_sequence_command_blocks_values_at_capacity);
   RUN_TEST(test_classify_command_token_rejects_null_and_empty_values);
   RUN_TEST(test_classify_command_token_recognizes_supported_g_commands);
   RUN_TEST(test_classify_command_token_recognizes_supported_m_commands);
   RUN_TEST(test_classify_command_token_recognizes_sequence_and_sync_commands);
+  RUN_TEST(test_classify_command_token_only_accepts_exact_sync_tokens);
+  RUN_TEST(test_classify_command_token_rejects_non_sync_s_prefixes);
+  RUN_TEST(test_classify_command_token_rejects_malformed_numeric_suffixes);
+  RUN_TEST(test_classify_command_token_accepts_leading_zeroes);
   RUN_TEST(test_classify_command_token_rejects_unknown_commands);
   RUN_TEST(test_has_processable_command_token_rejects_null_and_empty_values);
   RUN_TEST(test_has_processable_command_token_accepts_non_empty_values);
   RUN_TEST(test_can_append_command_byte_allows_lengths_below_buffer_size);
   RUN_TEST(test_can_append_command_byte_blocks_length_at_buffer_size);
+  RUN_TEST(test_command_input_accepts_carriage_return_termination);
+  RUN_TEST(test_command_input_accepts_line_feed_termination);
+  RUN_TEST(test_command_input_accepts_crlf_without_empty_command);
+  RUN_TEST(test_command_input_rejects_overlength_line_without_executing_prefix);
+  RUN_TEST(test_parse_joint_positions_command_reads_prefixed_values);
+  RUN_TEST(test_parse_joint_positions_command_keeps_absent_values);
+  RUN_TEST(test_parse_joint_positions_command_rejects_prefix_only_tokens);
+  RUN_TEST(test_parse_joint_positions_command_rejects_misread_wrist_rotate_token);
+  RUN_TEST(test_parse_joint_speeds_and_accelerations_reject_prefix_only_tokens);
+  RUN_TEST(test_parse_joint_speeds_and_accelerations_read_prefixed_values);
+  RUN_TEST(test_clamp_gripper_position_enforces_mechanical_limits);
   RUN_TEST(test_can_execute_sequence_on_dispatch_requires_end_with_active_sequence);
   RUN_TEST(test_can_execute_sequence_on_dispatch_rejects_non_end_commands);
+  RUN_TEST(test_can_start_sequence_rejects_nested_begin);
   RUN_TEST(test_should_queue_command_in_active_sequence_reflects_sequence_state);
   RUN_TEST(test_ready_response_message_matches_ui_contract);
   RUN_TEST(test_invalid_command_response_message_matches_ui_contract);

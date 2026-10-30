@@ -4,13 +4,11 @@
 
 #include "AbstractCommand.h"
 #include "ArmBuilder.h"
+#include "CommandInputRules.h"
 #include "CompositeCommand.h"
 #include "Structures.h"
 
 // This is the content of the .h file, which is where the declarations go
-
-const int8_t BUFFER_SIZE = 50;
-const int8_t COMMAND_BUFFER_CAPACITY = BUFFER_SIZE + 1;
 
 class CommandHandler
 {
@@ -18,9 +16,8 @@ private:
   ArmBuilder* mArmBuilder;
 
   // serial handling
-  char buffer[COMMAND_BUFFER_CAPACITY];
+  CommandInputBuffer mInput;
   char original[COMMAND_BUFFER_CAPACITY];
-  int8_t sofar;
 
   // sequence handling
   CompositeCommand* mSequence;
