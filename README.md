@@ -117,7 +117,7 @@ The native test environment currently exercises pure helper code without pulling
 - when sychronized, the motors arrive at the destination at the same time
 
 ## Status
-- `M503` returns all information about current arm position and settings
+- `M503` returns all information about the last commanded target positions and current settings
 
 ## Composite command (sequences)
 # Begin

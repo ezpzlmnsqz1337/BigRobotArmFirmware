@@ -46,7 +46,7 @@ void test_parse_sequence_repetitions_reads_iteration_token()
   TEST_ASSERT_EQUAL_INT8(5, parseSequenceRepetitions(repetitionsToken));
 }
 
-void test_parse_sequence_repetitions_defaults_to_one_for_unexpected_prefix()
+void test_parse_sequence_repetitions_rejects_unexpected_prefix()
 {
   char repetitionsToken[] = "X5";
   TEST_ASSERT_EQUAL_INT8(0, parseSequenceRepetitions(repetitionsToken));
@@ -455,7 +455,7 @@ int main(int argc, char** argv)
   RUN_TEST(test_clamp_configured_value_caps_high_value_at_maximum);
   RUN_TEST(test_parse_sequence_repetitions_defaults_to_one_without_token);
   RUN_TEST(test_parse_sequence_repetitions_reads_iteration_token);
-  RUN_TEST(test_parse_sequence_repetitions_defaults_to_one_for_unexpected_prefix);
+  RUN_TEST(test_parse_sequence_repetitions_rejects_unexpected_prefix);
   RUN_TEST(test_parse_sequence_repetitions_rejects_out_of_range_and_malformed_values);
   RUN_TEST(test_parse_sequence_repetitions_accepts_inclusive_bounds);
   RUN_TEST(test_can_add_sequence_command_allows_values_below_capacity);
